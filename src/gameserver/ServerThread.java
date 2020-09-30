@@ -2,11 +2,14 @@ package gameserver;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import game.Player;
+
 public class ServerThread extends Thread {
-	private String clientSentence;
+	private String newPlayerName;
 	private String capitalizedSentence;
 	private Socket connectionSocket;
 	private BufferedReader inFromClient;
@@ -15,33 +18,55 @@ public class ServerThread extends Thread {
 	private String sentence;
 	private BufferedReader inFromServer;
 	
+	// Common
+	private static Common common;
+	
 	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient) {
-		//this.welcomeSocket = welcomeSocket;
 		this.connectionSocket = connectionSocket;
 		this.inFromClient = inFromClient;
 		this.outToClient = outToClient;
+		this.common = new Common();
 	}
 	
 	@Override
-	public void run() {
+	public void run() { // connection.getInetAddress().getHostName())
 		try {
 			while (true) {
-				Thread.sleep(60000);
-				clientSentence = inFromClient.readLine();
+				String clientPlayer = connectionSocket.getInetAddress().getHostName();
+				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
 				
-				System.out.println("from client" + clientSentence);
-				if (clientSentence.contains(":exit")) {
-					connectionSocket.close();
-				} else if (clientSentence != null) {
-					sentence = clientSentence.toUpperCase();
-					System.out.println("Till client: " + sentence);
-					//capitalizedSentence = clientSentence.toUpperCase() + '\n';
-					outToClient.writeBytes(sentence + '\n');	
-				}
-	
+				newPlayerName = inFromClient.readLine(); // from client
+				sentence = "Welcome to the server " + newPlayerName;
+				
+				Player newPlayer = new Player(newPlayerName);
+				newPlayer.setXpos(1);
+				newPlayer.setYpos(1);
+				newPlayer.setDirection("up");
+				
+				common.addPlayer(newPlayer);
+				outToClient.writeBytes(sentence + '\n');
+				
+				sendPlayer(outToClient);
+				
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}	
+	}
+	
+	public static void sendPlayer(DataOutputStream outstream) {
+		String s = "{list:[";
+		for (Player p : common.getPlayers()) {
+			s = s + p.toString();
+		}
+		s = s + "]}";
+		System.out.println(s);
+		try {
+			outstream.writeBytes(s + "\n");
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

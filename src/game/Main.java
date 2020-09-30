@@ -1,5 +1,12 @@
 package game;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.*;
 import java.util.List;
 
@@ -115,7 +122,32 @@ public class Main extends Application {
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 
 			scoreList.setText(getScoreList());
+			connectToServer();
 		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void connectToServer() {
+		Socket clientSocket;
+		String sentence;
+		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+		try {
+			clientSocket = new Socket("10.24.68.94",6900);
+			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			while (true) {
+			
+				sentence = inFromUser.readLine();
+				outToServer.writeBytes(sentence + '\n'); // sends user name to server
+				
+				System.out.println(inFromServer.readLine());
+				System.out.println(inFromServer.readLine());
+				//clientSocket.close();
+			}
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

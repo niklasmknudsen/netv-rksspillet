@@ -12,7 +12,7 @@ public class Server {
 	 * @param args
 	 */
 	public static void main(String[] args)throws Exception {
-		ServerSocket welcomeSocket = new ServerSocket(6969);
+		ServerSocket welcomeSocket = new ServerSocket(6900);
 	    
 		
 		while (true) {
@@ -22,7 +22,7 @@ public class Server {
 			
 			ServerThread t1 = new ServerThread(connectionSocket, inFromClient, outToClient);
 			t1.start();
-	
+
 		}
 	}
 
