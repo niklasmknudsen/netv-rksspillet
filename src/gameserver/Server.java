@@ -12,10 +12,8 @@ public class Server {
 	 * @param args
 	 */
 	public static void main(String[] args)throws Exception {
-		//String clientSentence;
-		//String capitalizedSentence;
-		ServerSocket welcomeSocket = new ServerSocket(12345);
-	    //String sentence;
+		ServerSocket welcomeSocket = new ServerSocket(6969);
+	    
 		
 		while (true) {
 			Socket connectionSocket = welcomeSocket.accept();
