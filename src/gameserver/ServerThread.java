@@ -60,7 +60,6 @@ public class ServerThread extends Thread {
 		for (Player p : common.getPlayers()) {
 			s = s + p.toString();
 		}
-		s = s + "";
 		System.out.println(s);
 		try {
 			outstream.writeBytes(s + "\n");
