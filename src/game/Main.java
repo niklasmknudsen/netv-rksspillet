@@ -20,6 +20,12 @@ import javafx.scene.image.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.*;
+import org.json.JSONObject;
+
+import gameserver.Common;
+
+import org.json.*;
+
 
 public class Main extends Application {
 
@@ -32,8 +38,9 @@ public class Main extends Application {
 	public static Image hero_right,hero_left,hero_up,hero_down;
 
 	public static Player me;
-	public static List<Player> players = new ArrayList<Player>();
-
+	/*public static List<Player> players = new ArrayList<Player>(); */
+	public static Common common;
+	
 	private Label[][] fields;
 	private TextArea scoreList;
 	
@@ -113,15 +120,18 @@ public class Main extends Application {
             // Setting up standard players
 			pair p=getRandomFreePosition();
 			me = new Player("Orville",p.getX(),p.getY(),"up");
-			players.add(me);
+			//players.add(me);
+			common.addPlayer(me);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 
 			p=getRandomFreePosition();
 			Player harry = new Player("Harry",p.getX(),p.getY(),"up");
-			players.add(harry);
+			//players.add(harry);
+			common.addPlayer(harry);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 
 			scoreList.setText(getScoreList());
+			
 			connectToServer();
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -136,31 +146,33 @@ public class Main extends Application {
 			clientSocket = new Socket("10.24.67.16",6900);
 			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			while (true) {
+			//while (true) {
 			
 				sentence = inFromUser.readLine();
 				outToServer.writeBytes(sentence + '\n'); // sends user name to server
 				
 				System.out.println(inFromServer.readLine());
+				
+				// common get players
 				String response = inFromServer.readLine();
+				String[] commands = response.split(",");
+				System.out.println(response);
 				
-				System.out.println(Arrays.toString(response.split(",")));
-				String test = "[nik, 1, 1, up]";
-				
-				String[] arg = test.split("\\s");
-				
-				ArrayList<String> resultSet = new ArrayList<String>();
-				for (int i = 0; i < arg.length; i++) {
-					if (arg[i].equals("[") != true || arg[i].equals("]") != true || !arg[i].equals(",") != true) {
-						resultSet.add(arg[i]);
-					} 
+				try {
+					String playerName = commands[0];
+					int playerPositionX = Integer.parseInt(commands[1]);
+					int playerPositionY = Integer.parseInt(commands[2]);
+					String playerDirection = commands[3];
 					
+					this.movePlayerOnScreen(1,4, playerPositionX, playerPositionY, playerDirection);
+					
+					System.out.println();	
+				} catch (NumberFormatException error) {
+					error.printStackTrace();
 				}
 				
-				resultSet.forEach(item -> { System.out.println(item); } );
-				
-				//clientSocket.close();
-			}
+				clientSocket.close();
+			//}
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -182,7 +194,7 @@ public class Main extends Application {
 			if (Generel.board[y].charAt(x)==' ')
 			{
 				found = true;
-				for (Player p: players) {
+				for (Player p: Common.getPlayers()) {
 					if (p.xpos==x && p.ypos==y)
 						found = false;
 				}
@@ -259,14 +271,14 @@ public class Main extends Application {
 	
 	public String getScoreList() {
 		StringBuffer b = new StringBuffer(100);
-		for (Player p : players) {
+		for (Player p : Common.getPlayers()) {
 			b.append(p+"\r\n");
 		}
 		return b.toString();
 	}
 
 	public Player getPlayerAt(int x, int y) {
-		for (Player p : players) {
+		for (Player p : Common.getPlayers()) {
 			if (p.getXpos()==x && p.getYpos()==y) {
 				return p;
 			}
