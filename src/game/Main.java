@@ -133,7 +133,7 @@ public class Main extends Application {
 		String sentence;
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 		try {
-			clientSocket = new Socket("10.24.68.94",6900);
+			clientSocket = new Socket("10.24.67.16",6900);
 			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 			while (true) {
@@ -142,7 +142,23 @@ public class Main extends Application {
 				outToServer.writeBytes(sentence + '\n'); // sends user name to server
 				
 				System.out.println(inFromServer.readLine());
-				System.out.println(inFromServer.readLine());
+				String response = inFromServer.readLine();
+				
+				System.out.println(Arrays.toString(response.split(",")));
+				String test = "[nik, 1, 1, up]";
+				
+				String[] arg = test.split("\\s");
+				
+				ArrayList<String> resultSet = new ArrayList<String>();
+				for (int i = 0; i < arg.length; i++) {
+					if (arg[i].equals("[") != true || arg[i].equals("]") != true || !arg[i].equals(",") != true) {
+						resultSet.add(arg[i]);
+					} 
+					
+				}
+				
+				resultSet.forEach(item -> { System.out.println(item); } );
+				
 				//clientSocket.close();
 			}
 		} catch (UnknownHostException e) {
