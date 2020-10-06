@@ -25,7 +25,7 @@ public class ServerThread extends Thread {
 		this.connectionSocket = connectionSocket;
 		this.inFromClient = inFromClient;
 		this.outToClient = outToClient;
-		this.common = new Common();
+		common = new Common();
 	}
 	
 	@Override
@@ -38,12 +38,13 @@ public class ServerThread extends Thread {
 				newPlayerName = inFromClient.readLine(); // from client
 				sentence = "Welcome to the server " + newPlayerName;
 				
-				Player newPlayer = new Player(newPlayerName);
+				Player newPlayer = new Player();
+				newPlayer.setName(newPlayerName);
 				newPlayer.setXpos(1);
 				newPlayer.setYpos(1);
 				newPlayer.setDirection("up");
 				
-				common.addPlayer(newPlayer);
+				Common.addPlayer(newPlayer);
 				outToClient.writeBytes(sentence + '\n');
 				
 				sendPlayer(outToClient);
@@ -57,7 +58,7 @@ public class ServerThread extends Thread {
 	
 	public static void sendPlayer(DataOutputStream outstream) {
 		String s = "";
-		for (Player p : common.getPlayers()) {
+		for (Player p : Common.getPlayers()) {
 			s = s + p.toString();
 		}
 		System.out.println(s);
