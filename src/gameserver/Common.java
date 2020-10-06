@@ -28,4 +28,20 @@ public class Common {
 		}
 	}
 	
+	public static int size() {
+		return players.size();
+	}
+	
+	public static Player findPlayer(String playerName) {
+		Player requestedPlayer = null;
+		
+		for (int i = 0; i < players.size(); i++) {
+			System.out.println(players.get(i).getName());
+			if (players.get(i).getName().equals(playerName)) {
+				requestedPlayer = players.get(i);
+			}
+		}
+		
+		return requestedPlayer;
+	}
 }
