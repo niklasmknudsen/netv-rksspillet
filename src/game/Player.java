@@ -15,11 +15,19 @@ public class Player {
 		this.point = 0;
 	}
 	
-	public Player(String name) {
-		this.name = name;
+	public Player() {
+		this.name = "";
 		this.xpos = 0;
 		this.ypos = 0;
 		this.direction = "";
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return this.name;
 	}
 
 	public int getXpos() {
