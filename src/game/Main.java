@@ -294,7 +294,7 @@ public class Main extends Application {
 				String response = inFromServer.readLine();
 				String[] commands = response.split(",");
 				System.out.println(response);
-
+				System.out.println(response); // double code wrong
 				try {
 					String playerName = commands[0];
 					int playerPositionX = Integer.parseInt(commands[1]);
