@@ -151,7 +151,7 @@ public class Main extends Application {
 	public void connectToServer() {
 		Socket connectionSocket;
 		try {
-			connectionSocket = new Socket("10.24.67.16", 6900);
+			connectionSocket = new Socket("10.24.3.77", 6900);
 			DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 			// while (true) {
