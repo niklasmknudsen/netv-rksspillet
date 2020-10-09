@@ -38,7 +38,7 @@ public class Main extends Application {
 	/* public static List<Player> players = new ArrayList<Player>(); */
 	public static Common common;
 
-	public static SignInDialog signInDialog;
+//	public static SignInDialog signInDialog;
 
 	private Label[][] fields;
 	private TextArea scoreList;
@@ -152,35 +152,11 @@ public class Main extends Application {
 			connectionSocket = new Socket("10.24.3.77", 6900);
 			DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			while (true) {
 
-				System.out.println(inFromServer.readLine());
-
-				// common get players
-				String response = inFromServer.readLine();
-				String[] commands = response.split(",");
-				System.out.println(response);
-
-				try {
-					String playerName = commands[0];
-					int playerPositionX = Integer.parseInt(commands[1]);
-					int playerPositionY = Integer.parseInt(commands[2]);
-					String playerDirection = commands[3];
-
-					this.movePlayerOnScreen(1, 4, playerPositionX, playerPositionY, playerDirection);
-
-					System.out.println();
-				} catch (NumberFormatException error) {
-					error.printStackTrace();
-				}
-
-				connectionSocket.close();
-			}
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException error) {
+			error.printStackTrace();
 		}
+
 	}
 
 	public pair getRandomFreePosition()
@@ -308,34 +284,38 @@ public class Main extends Application {
 		public void run() {
 			String sentence;
 			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+
 			try {
 
-				while (true) {
+//				while (true) {
+				String s1 = inFromUser.readLine();
+				outToServer.writeBytes(s1 + "/n");
 
-					// Setting up standard players
-					me = new Player();
-					outToServer.writeBytes(me.getName() + "\n");
+				// Setting up standard players
+
+				// common get players
+				String response = inFromServer.readLine();
+				String[] commands = response.split(",");
+				System.out.println(response);
+
+				try {
+					String playerName = commands[0];
+					int playerPositionX = Integer.parseInt(commands[1]);
+					int playerPositionY = Integer.parseInt(commands[2]);
+					String playerDirection = commands[3];
+					me = new Player(playerName, playerPositionX, playerPositionY, playerDirection);
 					Common.addPlayer(me);
 
-					// common get players
-					String response = inFromServer.readLine();
-					String[] commands = response.split(",");
-					System.out.println(response);
-
-					try {
-						String playerName = commands[0];
-						int playerPositionX = Integer.parseInt(commands[1]);
-						int playerPositionY = Integer.parseInt(commands[2]);
-						String playerDirection = commands[3];
-
 //						Thread.sleep(2000);
-					} catch (NumberFormatException error) {
-						error.printStackTrace();
-					}
-
-					connectionSocket.close();
+				} catch (NumberFormatException error) {
+					error.printStackTrace();
 				}
-			} catch (UnknownHostException e) {
+
+				connectionSocket.close();
+//				}
+			} catch (
+
+			UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
