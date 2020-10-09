@@ -33,7 +33,6 @@ public class Main extends Application {
 	/* public static List<Player> players = new ArrayList<Player>(); */
 	public static Common common;
 
-	
 	public static SignInDialog signInDialog;
 
 	private Label[][] fields;
@@ -104,7 +103,7 @@ public class Main extends Application {
 			Scene scene = new Scene(grid, scene_width, scene_height);
 			primaryStage.setScene(scene);
 			primaryStage.show();
-			
+
 			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 				switch (event.getCode()) {
 				case UP:
@@ -123,8 +122,8 @@ public class Main extends Application {
 					break;
 				}
 			});
-			
-			
+
+	
 			pair p = getRandomFreePosition();
 		//	me = new Player();
 		//	Common.addPlayer(me);
@@ -135,13 +134,14 @@ public class Main extends Application {
 			Common.addPlayer(harry);
 			fields[pa.getX()][pa.getY()].setGraphic(new ImageView(hero_up));
 		
+
 			scoreList.setText(getScoreList());
 			connectToServer();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void openLoginScreen() {
 		signInDialog = new SignInDialog();
 		signInDialog.showAndWait();
@@ -154,8 +154,6 @@ public class Main extends Application {
 			ct.start();
 		
 		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	public pair getRandomFreePosition()
@@ -201,8 +199,9 @@ public class Main extends Application {
 			;
 			if (direction.equals("down")) {
 				fields[newx][newy].setGraphic(new ImageView(hero_down));
-			};
-     });
+			}
+			;
+		});
 
 	}
 
@@ -233,12 +232,11 @@ public class Main extends Application {
 
 	}
 
-	public void updateScoreTable()
-	{
+	public void updateScoreTable() {
 		Platform.runLater(() -> {
 			scoreList.setText(getScoreList());
 		});
-	} 
+	}
 
 	public void playerMoved(int delta_x, int delta_y, String direction) {
 		updatePlayer(delta_x, delta_y, direction);
@@ -249,7 +247,7 @@ public class Main extends Application {
 		StringBuffer b = new StringBuffer(100);
 		for (Player p : Common.getPlayers()) {
 			System.out.println(p.getName());
-			b.append(p +"\r\n");
+			b.append(p + "\r\n");
 		}
 		return b.toString();
 	}
@@ -273,18 +271,18 @@ public class Main extends Application {
 		}
 		launch(args);
 	}
-	
+
 	class ClientThread extends Thread {
 		private Socket connectionSocket;
 		private BufferedReader inFromServer;
 		private DataOutputStream outToServer;
-		
+
 		public ClientThread(Socket connectionSocket, BufferedReader inFromServer, DataOutputStream outToServer) {
 			this.connectionSocket = connectionSocket;
 			this.inFromServer = inFromServer;
 			this.outToServer = outToServer;
 		}
-		
+
 		@Override
 		public void run() {
 			String sentence;
@@ -328,6 +326,6 @@ public class Main extends Application {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 }
