@@ -57,9 +57,7 @@ public class SignInDialog extends Stage {
 	public void confirm() {
 		if (txtUsername.getText() != null) {
 			String username = txtUsername.getText().trim();
-			System.out.println(username);
-			this.me.setName(username);
-			
+			me.setName(username);
 			this.closeWindow();
 		}
 	}
