@@ -176,7 +176,7 @@ public class Main extends Application {
 				error.printStackTrace();
 			}
 
-			clientSocket.close();
+			connectionSocket.close();
 
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
