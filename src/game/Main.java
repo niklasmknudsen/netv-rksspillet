@@ -38,7 +38,6 @@ public class Main extends Application {
 	/* public static List<Player> players = new ArrayList<Player>(); */
 	public static Common common;
 
-	
 	public static SignInDialog signInDialog;
 
 	private Label[][] fields;
@@ -103,7 +102,7 @@ public class Main extends Application {
 			Scene scene = new Scene(grid, scene_width, scene_height);
 			primaryStage.setScene(scene);
 			primaryStage.show();
-			
+
 			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 				switch (event.getCode()) {
 				case UP:
@@ -122,19 +121,17 @@ public class Main extends Application {
 					break;
 				}
 			});
-			
+
 			me = new Player();
 			openLoginScreen();
 			Common.addPlayer(me);
-			
-			
+
 			pair p = getRandomFreePosition();
-			Player harry = new Player("Harry",p.getX(),p.getY(),"up");
+			Player harry = new Player("Harry", p.getX(), p.getY(), "up");
 			Common.addPlayer(harry);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
-			
-			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up)); 
-			
+
+			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 
 			scoreList.setText(getScoreList());
 
@@ -143,25 +140,21 @@ public class Main extends Application {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void openLoginScreen() {
 		Platform.runLater(() -> {
 			signInDialog = new SignInDialog(me);
 			signInDialog.showAndWait();
 		});
-	} 
-	
+	}
 
 	public void connectToServer() {
 		Socket connectionSocket;
-		try {			
-			clientSocket = new Socket("10.24.67.16", 6900);
-			DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+		try {
+			connectionSocket = new Socket("10.24.67.16", 6900);
+			DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
+			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 			// while (true) {
-
-			sentence = inFromUser.readLine();
-			outToServer.writeBytes(sentence + '\n'); // sends user name to server
 
 			System.out.println(inFromServer.readLine());
 
@@ -184,7 +177,7 @@ public class Main extends Application {
 			}
 
 			clientSocket.close();
-      
+
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -235,8 +228,9 @@ public class Main extends Application {
 			;
 			if (direction.equals("down")) {
 				fields[newx][newy].setGraphic(new ImageView(hero_down));
-			};
-     });
+			}
+			;
+		});
 
 	}
 
@@ -267,12 +261,11 @@ public class Main extends Application {
 
 	}
 
-	public void updateScoreTable()
-	{
+	public void updateScoreTable() {
 		Platform.runLater(() -> {
 			scoreList.setText(getScoreList());
 		});
-	} 
+	}
 
 	public void playerMoved(int delta_x, int delta_y, String direction) {
 		updatePlayer(delta_x, delta_y, direction);
@@ -283,7 +276,7 @@ public class Main extends Application {
 		StringBuffer b = new StringBuffer(100);
 		for (Player p : Common.getPlayers()) {
 			System.out.println(p.getName());
-			b.append(p +"\r\n");
+			b.append(p + "\r\n");
 		}
 		return b.toString();
 	}
@@ -300,59 +293,56 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
-	
+
 	class ClientThread extends Thread {
 		private Socket connectionSocket;
 		private BufferedReader inFromServer;
 		private DataOutputStream outToServer;
-		
+
 		public ClientThread(Socket connectionSocket, BufferedReader inFromServer, DataOutputStream outToServer) {
 			this.connectionSocket = connectionSocket;
 			this.inFromServer = inFromServer;
 			this.outToServer = outToServer;
 		}
-		
+
 		@Override
 		public void run() {
 			String sentence;
-			//BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+			// BufferedReader inFromUser = new BufferedReader(new
+			// InputStreamReader(System.in));
 			try {
 
-			//	while (true) {
-	
-					// Setting up standard players
-					outToServer.writeBytes(me.getName() + "\n");
-					
-					
-					// common get players
-					String response = inFromServer.readLine();
-					String[] commands = response.split(",");
-					System.out.println(response); 
-					
-					try {
-						String playerName = commands[0];
-						int playerPositionX = Integer.parseInt(commands[1]);
-						int playerPositionY = Integer.parseInt(commands[2]);
-						String playerDirection = commands[3];
-						
-						
-						
-						
-						//Thread.sleep(2000);
-					} catch (NumberFormatException error) {
-						error.printStackTrace();
-					} /*catch (InterruptedException e) {
-						e.printStackTrace();
-					} */
-					
-					connectionSocket.close();
-			//	}
+				// while (true) {
+
+				// Setting up standard players
+				outToServer.writeBytes(me.getName() + "\n");
+
+				// common get players
+				String response = inFromServer.readLine();
+				String[] commands = response.split(",");
+				System.out.println(response);
+
+				try {
+					String playerName = commands[0];
+					int playerPositionX = Integer.parseInt(commands[1]);
+					int playerPositionY = Integer.parseInt(commands[2]);
+					String playerDirection = commands[3];
+
+					// Thread.sleep(2000);
+				} catch (NumberFormatException error) {
+					error.printStackTrace();
+				} /*
+					 * catch (InterruptedException e) { e.printStackTrace(); }
+					 */
+
+				connectionSocket.close();
+				// }
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 }
