@@ -122,9 +122,7 @@ public class Main extends Application {
 				}
 			});
 
-			me = new Player();
-			openLoginScreen();
-			Common.addPlayer(me);
+			// openLoginScreen();
 
 			pair p = getRandomFreePosition();
 			Player harry = new Player("Harry", p.getX(), p.getY(), "up");
@@ -141,43 +139,43 @@ public class Main extends Application {
 		}
 	}
 
-	public void openLoginScreen() {
-		Platform.runLater(() -> {
-			signInDialog = new SignInDialog(me);
-			signInDialog.showAndWait();
-		});
-	}
+//	public void openLoginScreen() {
+//		Platform.runLater(() -> {
+//			signInDialog = new SignInDialog(me);
+//			signInDialog.showAndWait();
+//		});
+//	}
 
 	public void connectToServer() {
 		Socket connectionSocket;
 		try {
-			connectionSocket = new Socket("10.24.67.16", 6900);
+			connectionSocket = new Socket("10.24.3.77", 6900);
 			DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			// while (true) {
+			while (true) {
 
-			System.out.println(inFromServer.readLine());
+				System.out.println(inFromServer.readLine());
 
-			// common get players
-			String response = inFromServer.readLine();
-			String[] commands = response.split(",");
-			System.out.println(response);
+				// common get players
+				String response = inFromServer.readLine();
+				String[] commands = response.split(",");
+				System.out.println(response);
 
-			try {
-				String playerName = commands[0];
-				int playerPositionX = Integer.parseInt(commands[1]);
-				int playerPositionY = Integer.parseInt(commands[2]);
-				String playerDirection = commands[3];
+				try {
+					String playerName = commands[0];
+					int playerPositionX = Integer.parseInt(commands[1]);
+					int playerPositionY = Integer.parseInt(commands[2]);
+					String playerDirection = commands[3];
 
-				this.movePlayerOnScreen(1, 4, playerPositionX, playerPositionY, playerDirection);
+					this.movePlayerOnScreen(1, 4, playerPositionX, playerPositionY, playerDirection);
 
-				System.out.println();
-			} catch (NumberFormatException error) {
-				error.printStackTrace();
+					System.out.println();
+				} catch (NumberFormatException error) {
+					error.printStackTrace();
+				}
+
+				connectionSocket.close();
 			}
-
-			connectionSocket.close();
-
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -306,37 +304,37 @@ public class Main extends Application {
 		}
 
 		@Override
+		// 10.24.3.77 ipv4 adress
 		public void run() {
 			String sentence;
-			// BufferedReader inFromUser = new BufferedReader(new
-			// InputStreamReader(System.in));
+			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 			try {
 
-				// while (true) {
+				while (true) {
 
-				// Setting up standard players
-				outToServer.writeBytes(me.getName() + "\n");
+					// Setting up standard players
+					me = new Player();
+					outToServer.writeBytes(me.getName() + "\n");
+					Common.addPlayer(me);
 
-				// common get players
-				String response = inFromServer.readLine();
-				String[] commands = response.split(",");
-				System.out.println(response);
+					// common get players
+					String response = inFromServer.readLine();
+					String[] commands = response.split(",");
+					System.out.println(response);
 
-				try {
-					String playerName = commands[0];
-					int playerPositionX = Integer.parseInt(commands[1]);
-					int playerPositionY = Integer.parseInt(commands[2]);
-					String playerDirection = commands[3];
+					try {
+						String playerName = commands[0];
+						int playerPositionX = Integer.parseInt(commands[1]);
+						int playerPositionY = Integer.parseInt(commands[2]);
+						String playerDirection = commands[3];
 
-					// Thread.sleep(2000);
-				} catch (NumberFormatException error) {
-					error.printStackTrace();
-				} /*
-					 * catch (InterruptedException e) { e.printStackTrace(); }
-					 */
+//						Thread.sleep(2000);
+					} catch (NumberFormatException error) {
+						error.printStackTrace();
+					}
 
-				connectionSocket.close();
-				// }
+					connectionSocket.close();
+				}
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
