@@ -120,17 +120,21 @@ public class Main extends Application {
 				}
 			});
 			
+			me = new Player();
+			openLoginScreen();
+			Common.addPlayer(me);
+			
 			
 			pair p = getRandomFreePosition();
 			Player harry = new Player("Harry",p.getX(),p.getY(),"up");
-			//players.add(harry);
 			Common.addPlayer(harry);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 			
-		
+			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up)); 
 			
+
 			scoreList.setText(getScoreList());
-			openLoginScreen();
+			
 			connectToServer();
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -139,21 +143,24 @@ public class Main extends Application {
 	
 	public void openLoginScreen() {
 		Platform.runLater(() -> {
-			me = new Player();
 			signInDialog = new SignInDialog(me);
 			signInDialog.showAndWait();
 		});
-	}
+	} 
 	
 	public void connectToServer() {
 		Socket connectionSocket;
 		try {
-			connectionSocket = new Socket("192.168.87.164",6900);
+			connectionSocket = new Socket("10.24.74.200",6900);
 			DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 			
+			// Setting up standard players
+			outToServer.writeBytes(me.getName() + "\n");
+			
 			ClientThread ct = new ClientThread(connectionSocket, inFromServer, outToServer);
 			ct.start();
+			
 			
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -237,13 +244,13 @@ public class Main extends Application {
 		}
 		
 	}
-	
+
 	public void updateScoreTable()
 	{
 		Platform.runLater(() -> {
 			scoreList.setText(getScoreList());
 		});
-	}
+	} 
 	public void playerMoved(int delta_x, int delta_y, String direction) {
 		updatePlayer(delta_x,delta_y,direction);
 		updateScoreTable();
@@ -252,7 +259,8 @@ public class Main extends Application {
 	public String getScoreList() {
 		StringBuffer b = new StringBuffer(100);
 		for (Player p : Common.getPlayers()) {
-			b.append(p+"\r\n");
+			System.out.println(p.getName());
+			b.append(p +"\r\n");
 		}
 		return b.toString();
 	}
@@ -287,11 +295,11 @@ public class Main extends Application {
 			//BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 			try {
 
-				while (true) {
+			//	while (true) {
+	
 					// Setting up standard players
-					pair p = getRandomFreePosition();
-					Common.addPlayer(me);
-					fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up)); 
+					outToServer.writeBytes(me.getName() + "\n");
+					
 					
 					// common get players
 					String response = inFromServer.readLine();
@@ -299,7 +307,7 @@ public class Main extends Application {
 					System.out.println(response); 
 					
 					try {
-					//	String playerName = commands[0];
+						String playerName = commands[0];
 						int playerPositionX = Integer.parseInt(commands[1]);
 						int playerPositionY = Integer.parseInt(commands[2]);
 						String playerDirection = commands[3];
@@ -307,15 +315,15 @@ public class Main extends Application {
 						
 						
 						
-						Thread.sleep(2000);
+						//Thread.sleep(2000);
 					} catch (NumberFormatException error) {
 						error.printStackTrace();
-					} catch (InterruptedException e) {
+					} /*catch (InterruptedException e) {
 						e.printStackTrace();
-					}
+					} */
 					
 					connectionSocket.close();
-				}
+			//	}
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
