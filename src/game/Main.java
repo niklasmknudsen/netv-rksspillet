@@ -123,7 +123,8 @@ public class Main extends Application {
 			});
 
 			// openLoginScreen();
-
+			me = new Player();
+			Common.addPlayer(me);
 			pair p = getRandomFreePosition();
 			Player harry = new Player("Harry", p.getX(), p.getY(), "up");
 			Common.addPlayer(harry);
@@ -287,13 +288,9 @@ public class Main extends Application {
 
 			try {
 
-//				while (true) {
 				String s1 = inFromUser.readLine();
 				outToServer.writeBytes(s1 + "/n");
 
-				// Setting up standard players
-
-				// common get players
 				String response = inFromServer.readLine();
 				String[] commands = response.split(",");
 				System.out.println(response);
@@ -303,8 +300,10 @@ public class Main extends Application {
 					int playerPositionX = Integer.parseInt(commands[1]);
 					int playerPositionY = Integer.parseInt(commands[2]);
 					String playerDirection = commands[3];
-					me = new Player(playerName, playerPositionX, playerPositionY, playerDirection);
-					Common.addPlayer(me);
+					me.setName(playerName);
+					me.setXpos(playerPositionX);
+					me.setYpos(playerPositionY);
+					me.setDirection(playerDirection);
 
 //						Thread.sleep(2000);
 				} catch (NumberFormatException error) {
@@ -312,7 +311,6 @@ public class Main extends Application {
 				}
 
 				connectionSocket.close();
-//				}
 			} catch (
 
 			UnknownHostException e) {
