@@ -4,15 +4,11 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
-import java.util.List;
-
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -21,11 +17,7 @@ import javafx.scene.image.*;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.*;
-import org.json.JSONObject;
-
 import gameserver.Common;
-
-import org.json.*;
 
 
 public class Main extends Application {
@@ -46,7 +38,11 @@ public class Main extends Application {
 	
 	private Label[][] fields;
 	private TextArea scoreList;
+	private String userName;
 	
+	private static Socket connectionSocket;
+	private static DataOutputStream outToServer;
+	private static BufferedReader inFromServer;
 	
 
 	
@@ -120,21 +116,19 @@ public class Main extends Application {
 				}
 			});
 			
-			me = new Player();
-			openLoginScreen();
-			Common.addPlayer(me);
-			
 			
 			pair p = getRandomFreePosition();
-			Player harry = new Player("Harry",p.getX(),p.getY(),"up");
-			Common.addPlayer(harry);
+		//	me = new Player();
+		//	Common.addPlayer(me);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 			
-			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up)); 
-			
-
+			pair pa = getRandomFreePosition();
+			Player harry = new Player("Harry",pa.getX(),pa.getY(),"up");
+			Common.addPlayer(harry);
+			fields[pa.getX()][pa.getY()].setGraphic(new ImageView(hero_up));
+		
 			scoreList.setText(getScoreList());
-			
+			//openLoginScreen();
 			connectToServer();
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -142,31 +136,18 @@ public class Main extends Application {
 	}
 	
 	public void openLoginScreen() {
-		Platform.runLater(() -> {
-			signInDialog = new SignInDialog(me);
-			signInDialog.showAndWait();
-		});
+		signInDialog = new SignInDialog();
+		signInDialog.showAndWait();
 	} 
 	
 	public void connectToServer() {
-		Socket connectionSocket;
 		try {
-			connectionSocket = new Socket("10.24.74.200",6900);
-			DataOutputStream outToServer = new DataOutputStream(connectionSocket.getOutputStream());
-			BufferedReader inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			
-			// Setting up standard players
-			outToServer.writeBytes(me.getName() + "\n");
-			
 			ClientThread ct = new ClientThread(connectionSocket, inFromServer, outToServer);
 			ct.start();
-			
-			
-		} catch (UnknownHostException e) {
+		
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		} 
 	}
 	
 	public pair getRandomFreePosition()
@@ -275,6 +256,13 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
+		try {
+			connectionSocket = new Socket("10.24.74.200",6900);
+			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
+			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		launch(args);
 	}
 	
@@ -292,36 +280,38 @@ public class Main extends Application {
 		@Override
 		public void run() {
 			String sentence;
-			//BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 			try {
 
-			//	while (true) {
-	
+				//while (true) {	
+					String newPlayerName = inFromUser.readLine();
 					// Setting up standard players
-					outToServer.writeBytes(me.getName() + "\n");
-					
+					outToServer.writeBytes(newPlayerName + "\n");
+					System.out.println(inFromServer.readLine());
+					System.out.println(inFromServer.readLine());
 					
 					// common get players
 					String response = inFromServer.readLine();
+					System.out.println(response);
 					String[] commands = response.split(",");
-					System.out.println(response); 
-					
 					try {
+						
 						String playerName = commands[0];
 						int playerPositionX = Integer.parseInt(commands[1]);
 						int playerPositionY = Integer.parseInt(commands[2]);
 						String playerDirection = commands[3];
 						
-						
-						
+						me = new Player();
+						me.setName(playerName);
+						me.setXpos(playerPositionX);
+						me.setYpos(playerPositionY);
+						me.setDirection(playerDirection);
+						Common.addPlayer(me);
 						
 						//Thread.sleep(2000);
 					} catch (NumberFormatException error) {
 						error.printStackTrace();
-					} /*catch (InterruptedException e) {
-						e.printStackTrace();
-					} */
-					
+					} 
 					connectionSocket.close();
 			//	}
 			} catch (UnknownHostException e) {

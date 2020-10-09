@@ -19,13 +19,12 @@ public class ServerThread extends Thread {
 	private BufferedReader inFromServer;
 	
 	// Common
-	private static Common common;
+	private static Common common = new Common();
 	
 	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient) {
 		this.connectionSocket = connectionSocket;
 		this.inFromClient = inFromClient;
 		this.outToClient = outToClient;
-		common = new Common();
 	}
 	
 	@Override
@@ -46,7 +45,7 @@ public class ServerThread extends Thread {
 				
 				Common.addPlayer(newPlayer);
 				outToClient.writeBytes(sentence + '\n');
-				
+				outToClient.writeBytes(Common.getPlayers().size() + "\n");
 				sendPlayer(outToClient);
 				
 				

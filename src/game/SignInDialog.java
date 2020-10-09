@@ -1,5 +1,8 @@
 package game;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,15 +19,14 @@ public class SignInDialog extends Stage {
 	private TextField txtUsername;
 	private Button btnConfirm;
 	
-	private Player me;
+	private DataOutputStream output;
 
-	public SignInDialog(Player player) {
+	public SignInDialog() {
 	    this.initStyle(StageStyle.UTILITY);
 	    this.initModality(Modality.APPLICATION_MODAL);
 	    this.setResizable(false);
 	    this.setTitle("Sign In");
 	    
-	    this.me = player;
 	    
         GridPane pane = new GridPane();
         Scene scene = new Scene(pane);
@@ -54,12 +56,14 @@ public class SignInDialog extends Stage {
 	}
 	
 	
-	public void confirm() {
+	public String confirm() {
+		String userName = "";
 		if (txtUsername.getText() != null) {
-			String username = txtUsername.getText().trim();
-			me.setName(username);
-			this.closeWindow();
+			userName = txtUsername.getText().trim();
+			this.close();
+			return userName;
 		}
+		return userName;
 	}
 	
 	
