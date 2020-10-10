@@ -43,6 +43,7 @@ public class Main extends Application {
 	private static Socket connectionSocket;
 	private static DataOutputStream outToServer;
 	private static BufferedReader inFromServer;
+	private static ClientThread clientThread;
 	
 
 	// -------------------------------------------
@@ -124,7 +125,7 @@ public class Main extends Application {
 				}
 			});
 			
-			
+		
 			pair p = getRandomFreePosition();
 		//	me = new Player();
 		//	Common.addPlayer(me);
@@ -149,10 +150,11 @@ public class Main extends Application {
 	
 
 	public void connectToServer() {
+		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 		try {
-			ClientThread ct = new ClientThread(connectionSocket, inFromServer, outToServer);
-			ct.start();
-		
+			clientThread = new ClientThread(connectionSocket, inFromServer, outToServer);
+			clientThread.start();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -244,11 +246,12 @@ public class Main extends Application {
 		updatePlayer(delta_x, delta_y, direction);
 		updateScoreTable();
 	}
+	
 
 	public String getScoreList() {
 		StringBuffer b = new StringBuffer(100);
 		for (Player p : Common.getPlayers()) {
-			System.out.println(p.getName());
+			//System.out.println(p.toString());
 			b.append(p +"\r\n");
 		}
 		return b.toString();
@@ -265,9 +268,10 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		try {
-			connectionSocket = new Socket("10.24.74.200",6900);
+			connectionSocket = new Socket("192.168.87.164",6900);
 			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -278,6 +282,8 @@ public class Main extends Application {
 		private Socket connectionSocket;
 		private BufferedReader inFromServer;
 		private DataOutputStream outToServer;
+		
+		// used for players current position on the screen
 		
 		public ClientThread(Socket connectionSocket, BufferedReader inFromServer, DataOutputStream outToServer) {
 			this.connectionSocket = connectionSocket;
@@ -290,38 +296,68 @@ public class Main extends Application {
 			String sentence;
 			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 			try {
-
-				//while (true) {	
-					String newPlayerName = inFromUser.readLine();
-					// Setting up standard players
-					outToServer.writeBytes(newPlayerName + "\n");
-					System.out.println(inFromServer.readLine());
-					System.out.println(inFromServer.readLine());
+				String newPlayerName = inFromUser.readLine();
+				// Setting up standard players
+				outToServer.writeBytes(newPlayerName + "\n");
+				System.out.println(inFromServer.readLine() + " U can move the character by pressing on the arrow keys");
+			
+				
+				// common get players
+				String response = inFromServer.readLine();
+				System.out.println(response);
+				String[] commands = response.split(",");
+				
+				try {
 					
-					// common get players
-					String response = inFromServer.readLine();
-					System.out.println(response);
-					String[] commands = response.split(",");
-					try {
+					String playerName = commands[0];
+					int playerPositionX = Integer.parseInt(commands[1]);
+					int playerPositionY = Integer.parseInt(commands[2]);
+					String playerDirection = commands[3];
+
+					me = new Player();
+					me.setName(playerName);
+					me.setXpos(playerPositionX);
+					me.setYpos(playerPositionY);
+					me.setDirection(playerDirection);
+					Common.addPlayer(me);
+					
+					
+					while (true) {
+						int x = me.getXpos();
+						int y = me.getYpos();
+						String direc = me.getDirection();
 						
-						String playerName = commands[0];
-						int playerPositionX = Integer.parseInt(commands[1]);
-						int playerPositionY = Integer.parseInt(commands[2]);
-						String playerDirection = commands[3];
+						outToServer.writeBytes(me.getName() + "," + x + "," + y + "," + direc + "\n");
 						
-						me = new Player();
-						me.setName(playerName);
-						me.setXpos(playerPositionX);
-						me.setYpos(playerPositionY);
-						me.setDirection(playerDirection);
-						Common.addPlayer(me);
 						
-						//Thread.sleep(2000);
+						String receivedData = inFromServer.readLine();
+						String[] resultSet = receivedData.split(",");
+						System.out.println(receivedData);
+						String playerWithName = resultSet[0];
+					
+						
+						for (Player player: Common.getPlayers()) {
+							if (player.getName().equals(playerWithName)) {
+								System.out.println("player: " + playerWithName + " is moving.....");
+								int oldX = player.getXpos();
+								int oldY = player.getYpos();
+								
+								int newX = Integer.parseInt(resultSet[1]);
+								int newY = Integer.parseInt(resultSet[2]);
+								
+								movePlayerOnScreen(oldX,oldY, newX, newY, resultSet[3]);
+								updateScoreTable();
+							}
+						}
+					}
+					
+					
 					} catch (NumberFormatException error) {
 						error.printStackTrace();
-					} 
-					connectionSocket.close();
-			//	}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				connectionSocket.close();
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -330,4 +366,5 @@ public class Main extends Application {
 		}
 		
 	}
+
 }
