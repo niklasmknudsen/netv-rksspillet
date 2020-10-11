@@ -15,50 +15,84 @@ import game.pair;
 
 public class ServerThread extends Thread {
 	private String newPlayerName;
-	private String capitalizedSentence;
 	private Socket connectionSocket;
 	private BufferedReader inFromClient;
 	private DataOutputStream outToClient;
 	private ServerSocket welcomeSocket;
 	private String sentence;
-	private BufferedReader inFromServer;
-	// added players arraylist for random pos
-	public static List<Player> players = new ArrayList<Player>();
-
+	
 	// Common
-	private static Common common = new Common();
+	private static Common common;
 
-	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient) {
+	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient, Common common) {
 		this.connectionSocket = connectionSocket;
 		this.inFromClient = inFromClient;
 		this.outToClient = outToClient;
+		this.common = common;
 	}
 
 	@Override
 	public void run() { // connection.getInetAddress().getHostName())
 		try {
+			newPlayerName = inFromClient.readLine(); // from client
+			sentence = "Welcome to the server " + newPlayerName;
+			outToClient.writeBytes(sentence + '\n');
+			
+
+			pair p = getRandomFreePosition();
+			Player newPlayer = new Player();
+			newPlayer.setName(newPlayerName);
+			newPlayer.setXpos(p.getX());
+			newPlayer.setYpos(p.getY());
+			newPlayer.setDirection("up");
+			Common.addPlayer(newPlayer);
+
+			
 			while (true) {
 				String clientPlayer = connectionSocket.getInetAddress().getHostName();
 				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
 
-				newPlayerName = inFromClient.readLine(); // from client
-				sentence = "Welcome to the server " + newPlayerName;
-				
-				Player newPlayer = new Player();
-				newPlayer.setName(newPlayerName);
-				newPlayer.setXpos(1);
-				newPlayer.setYpos(1);
-				newPlayer.setDirection("up");
-				
-				Common.addPlayer(newPlayer);
-				outToClient.writeBytes(sentence + '\n');
-				outToClient.writeBytes(Common.getPlayers().size() + "\n");
 
 				sendPlayer(outToClient);
+				System.out.println("clients connected = " + Server.clients.size());
+				for (ServerThread st: Server.clients) {
+					if (newPlayer.getName().length() != 0) {
+						st.updatePlayers(inFromClient.readLine());
+					}
+					else {
+						System.out.println("player hasen't been created yet");
+					}
+				}
 
+				sendPlayer(outToClient);
+				Thread.sleep(2000);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void updatePlayers(String newPositions) {
+		try {
+			String[] receivedPosition = newPositions.split(",");
+			String playerToUpdate = receivedPosition[0];
+			int newX = Integer.parseInt(receivedPosition[1]);
+			int newY = Integer.parseInt(receivedPosition[2]);
+			String playerDirection = receivedPosition[3];
+			System.out.println("new positions: " + newPositions);
+			
+			for (int i = 0; i < Common.getPlayers().size(); i++) {
+				System.out.println("playerToUpdate: " + playerToUpdate);
+				System.out.println("current: " + Common.getPlayers().get(i).getName().equals(playerToUpdate));
+				if (Common.getPlayers().get(i).getName().equals(playerToUpdate)) {
+					Player foundPlayer = Common.getPlayers().get(i);
+					foundPlayer.setXpos(newX);
+					foundPlayer.setYpos(newY);
+					foundPlayer.setDirection(playerDirection);
+				}
+			}	
+		} catch (NumberFormatException error) {
+			error.printStackTrace();
 		}
 	}
 
@@ -89,7 +123,7 @@ public class ServerThread extends Thread {
 			y = Math.abs(r.nextInt() % 18) + 1;
 			if (Generel.board[y].charAt(x) == ' ') {
 				found = true;
-				for (Player p : players) {
+				for (Player p : Common.getPlayers()) {
 					if (p.xpos == x && p.ypos == y)
 						found = false;
 				}
