@@ -54,12 +54,18 @@ public class ServerThread extends Thread {
 
 
 				sendPlayer(outToClient);
-				
+				System.out.println("clients connected = " + Server.clients.size());
 				for (ServerThread st: Server.clients) {
-					st.updatePlayers(inFromClient.readLine());
+					if (newPlayer.getName().length() != 0) {
+						st.updatePlayers(inFromClient.readLine());
+					}
+					else {
+						System.out.println("player hasen't been created yet");
+					}
 				}
 
 				sendPlayer(outToClient);
+				Thread.sleep(2000);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -73,16 +79,17 @@ public class ServerThread extends Thread {
 			int newX = Integer.parseInt(receivedPosition[1]);
 			int newY = Integer.parseInt(receivedPosition[2]);
 			String playerDirection = receivedPosition[3];
-			
+			System.out.println("new positions: " + newPositions);
 			
 			for (int i = 0; i < Common.getPlayers().size(); i++) {
+				System.out.println("playerToUpdate: " + playerToUpdate);
+				System.out.println("current: " + Common.getPlayers().get(i).getName().equals(playerToUpdate));
 				if (Common.getPlayers().get(i).getName().equals(playerToUpdate)) {
 					Player foundPlayer = Common.getPlayers().get(i);
 					foundPlayer.setXpos(newX);
 					foundPlayer.setYpos(newY);
 					foundPlayer.setDirection(playerDirection);
 				}
-				throw new IllegalArgumentException("player doesn't exists");
 			}	
 		} catch (NumberFormatException error) {
 			error.printStackTrace();
