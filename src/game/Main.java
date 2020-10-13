@@ -266,7 +266,7 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		try {
-			connectionSocket = new Socket("10.24.74.147",6900);
+			connectionSocket = new Socket("192.168.87.164",6900);
 			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
 			
@@ -325,6 +325,8 @@ public class Main extends Application {
 					Common.addPlayer(me);
 					updateScoreTable();
 					
+					
+					
 					while (true) {
 						int x = me.getXpos();
 						int y = me.getYpos();
@@ -340,22 +342,28 @@ public class Main extends Application {
 						
 						if (resultSet.length > 4 && resultSet[4] != null) {
 							secondPlayer = resultSet[4];
+							boolean check = checkifExists(secondPlayer);
+							System.out.println(check);
 							Player newPlayer = new Player();
 							newPlayer.setName(secondPlayer);
 							newPlayer.setXpos(Integer.parseInt(resultSet[5]));
 							newPlayer.setYpos(Integer.parseInt(resultSet[6]));
 							newPlayer.setDirection(resultSet[7]);
 							Common.addPlayer(newPlayer);
+							updateScoreTable();
 							
 						}
 						if (resultSet.length > 8 && resultSet[8] != null) {
 							thirdPlayer = resultSet[8];
+							boolean check = checkifExists(thirdPlayer);
+							System.out.println(check);
 							Player newPlayer = new Player();
 							newPlayer.setName(thirdPlayer);
 							newPlayer.setXpos(Integer.parseInt(resultSet[9]));
 							newPlayer.setYpos(Integer.parseInt(resultSet[10]));
 							newPlayer.setDirection(resultSet[11]);
 							Common.addPlayer(newPlayer);
+							updateScoreTable();
 						}
 	
 						for (Player player: Common.getPlayers()) {
@@ -392,7 +400,7 @@ public class Main extends Application {
 							}
 							
 						}
-						Thread.sleep(5000);
+						Thread.sleep(2000);
 					}
 					
 					} catch (NumberFormatException error) {
@@ -410,7 +418,17 @@ public class Main extends Application {
 
 	}
 	
-	
+	public boolean checkifExists(String playerName) {
+		for (Player pl : Common.getPlayers()) {
+			if (pl.getName().equals(playerName)) {
+				System.out.println("check if " + pl.getName() + " exists");
+				Common.removePlayer(pl);
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static boolean isNumeric(String str) { 
 		  try {  
 		    Integer.parseInt(str);  
