@@ -72,7 +72,7 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	public void updatePlayers(String newPositions) {
+	public synchronized void updatePlayers(String newPositions) {
 		try {
 			String[] receivedPosition = newPositions.split(",");
 			String firstPlayer = receivedPosition[0];
@@ -82,21 +82,23 @@ public class ServerThread extends Thread {
 			
 			if (receivedPosition.length > 4 && receivedPosition[4] != null) {
 				secondPlayer = receivedPosition[4];
-				/*Player newPlayer = new Player();
+				checkifExists(secondPlayer);
+				Player newPlayer = new Player();
 				newPlayer.setName(secondPlayer);
 				newPlayer.setXpos(Integer.parseInt(receivedPosition[5]));
 				newPlayer.setYpos(Integer.parseInt(receivedPosition[6]));
 				newPlayer.setDirection(receivedPosition[7]);
-				Common.addPlayer(newPlayer); */
+				Common.addPlayer(newPlayer);
 			}
 			if (receivedPosition.length > 7 && receivedPosition[8] != null) {
 				thirdPlayer = receivedPosition[8];
-				/*Player newPlayer = new Player();
+				checkifExists(thirdPlayer);
+				Player newPlayer = new Player();
 				newPlayer.setName(secondPlayer);
 				newPlayer.setXpos(Integer.parseInt(receivedPosition[9]));
 				newPlayer.setYpos(Integer.parseInt(receivedPosition[10]));
 				newPlayer.setDirection(receivedPosition[11]);
-				Common.addPlayer(newPlayer); */
+				Common.addPlayer(newPlayer); 
 			}
 
 			for (int i = 0; i < Common.getPlayers().size(); i++) {
@@ -148,6 +150,15 @@ public class ServerThread extends Thread {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	
+	public void checkifExists(String playerName) {
+		for (Player pl : Common.getPlayers()) {
+			if (pl.getName().equals(playerName)) {
+				Common.removePlayer(pl);
+			}
 		}
 	}
 

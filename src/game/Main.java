@@ -30,8 +30,8 @@ public class Main extends Application {
 	public static Image hero_right, hero_left, hero_up, hero_down;
 
 	public static Player me;
-	/* public static List<Player> players = new ArrayList<Player>(); */
-	public static Common common;
+	public static List<Player> players = new ArrayList<Player>();
+	
 
 	public static SignInDialog signInDialog;
 
@@ -130,7 +130,7 @@ public class Main extends Application {
 			
 			pair pa = getRandomFreePosition();
 			Player harry = new Player("Harry",pa.getX(),pa.getY(),"up");
-			Common.addPlayer(harry);
+			players.add(harry);
 			fields[pa.getX()][pa.getY()].setGraphic(new ImageView(hero_up));
 		
 
@@ -150,11 +150,11 @@ public class Main extends Application {
 	public void connectToServer() {
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 		try {
-			clientThread = new ClientThread(connectionSocket, inFromServer, outToServer);
+			clientThread = new ClientThread(this, connectionSocket, inFromServer, outToServer);
 			clientThread.start();
 
 		} catch (Exception e) {
-		
+			e.getMessage();
 		}
 	}
 
@@ -171,7 +171,7 @@ public class Main extends Application {
 			y = Math.abs(r.nextInt() % 18) + 1;
 			if (Generel.board[y].charAt(x) == ' ') {
 				found = true;
-				for (Player p : Common.getPlayers()) {
+				for (Player p : players) {
 					if (p.xpos == x && p.ypos == y)
 						found = false;
 				}
@@ -248,7 +248,7 @@ public class Main extends Application {
 
 	public String getScoreList() {
 		StringBuffer b = new StringBuffer(100);
-		for (Player p : Common.getPlayers()) {
+		for (Player p : players) {
 			//System.out.println(p.toString());
 			b.append(p +"\r\n");
 		}
@@ -256,7 +256,7 @@ public class Main extends Application {
 	}
 
 	public Player getPlayerAt(int x, int y) {
-		for (Player p : Common.getPlayers()) {
+		for (Player p : players) {
 			if (p.getXpos() == x && p.getYpos() == y) {
 				return p;
 			}
@@ -266,7 +266,7 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		try {
-			connectionSocket = new Socket("10.24.74.147",6900);
+			connectionSocket = new Socket("192.168.87.164",6900);
 			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
 			
@@ -275,149 +275,5 @@ public class Main extends Application {
 		}
 		launch(args);
 	}
-
-	class ClientThread extends Thread {
-		private Socket connectionSocket;
-		private BufferedReader inFromServer;
-		private DataOutputStream outToServer;
-
-		
-		public ClientThread(Socket connectionSocket, BufferedReader inFromServer, DataOutputStream outToServer) {
-			this.connectionSocket = connectionSocket;
-			this.inFromServer = inFromServer;
-			this.outToServer = outToServer;
-		}
-
-		@Override
-		public void run() {
-			String sentence;
-			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
-			
-			// Players
-			String firstPlayer = "";
-			String secondPlayer = "";
-			String thirdPlayer = "";
-			
-			try {
-				String newPlayerName = inFromUser.readLine();
-				// Setting up standard players
-				outToServer.writeBytes(newPlayerName + "\n");
-				System.out.println(inFromServer.readLine() + " U can move the character by pressing on the arrow keys");
-			
-				
-				// common get players
-				String response = inFromServer.readLine();
-				System.out.println(response);
-				String[] commands = response.split(",");
-				
-				try {
-					System.out.println("commands: " + response);
-					String playerName = commands[0];
-					int playerPositionX = Integer.parseInt(commands[1]);
-					int playerPositionY = Integer.parseInt(commands[2]);
-					String playerDirection = commands[3];
-
-					me = new Player();
-					me.setName(playerName);
-					me.setXpos(playerPositionX);
-					me.setYpos(playerPositionY);
-					me.setDirection(playerDirection);
-					Common.addPlayer(me);
-					updateScoreTable();
-					
-					while (true) {
-						int x = me.getXpos();
-						int y = me.getYpos();
-						String direc = me.getDirection();
-						System.out.println("direction: " + direc);
-						outToServer.writeBytes(me.getName() + "," + x + "," + y + "," + direc + "\n");
-						
-						System.out.println(Common.getPlayers().size());
-						String receivedData = inFromServer.readLine();
-						String[] resultSet = receivedData.split(",");
-						System.out.println("receivedData: " + receivedData);
-						firstPlayer = resultSet[0];
-						
-						if (resultSet.length > 4 && resultSet[4] != null) {
-							secondPlayer = resultSet[4];
-							Player newPlayer = new Player();
-							newPlayer.setName(secondPlayer);
-							newPlayer.setXpos(Integer.parseInt(resultSet[5]));
-							newPlayer.setYpos(Integer.parseInt(resultSet[6]));
-							newPlayer.setDirection(resultSet[7]);
-							Common.addPlayer(newPlayer);
-							
-						}
-						if (resultSet.length > 8 && resultSet[8] != null) {
-							thirdPlayer = resultSet[8];
-							Player newPlayer = new Player();
-							newPlayer.setName(thirdPlayer);
-							newPlayer.setXpos(Integer.parseInt(resultSet[9]));
-							newPlayer.setYpos(Integer.parseInt(resultSet[10]));
-							newPlayer.setDirection(resultSet[11]);
-							Common.addPlayer(newPlayer);
-						}
-	
-						for (Player player: Common.getPlayers()) {
-							System.out.println("players online: " + Common.getPlayers().size());
-							if (player.getName().equals(firstPlayer)) {
-								System.out.println("player: " + firstPlayer + " is moving.....");
-								int oldX = player.getXpos();
-								int oldY = player.getYpos();
-								
-								int newX = Integer.parseInt(resultSet[1]);
-								int newY = Integer.parseInt(resultSet[2]);
-								
-								movePlayerOnScreen(oldX, oldY, newX, newY, resultSet[3]);
-							} 
-							if (player.getName().equals(secondPlayer)) {
-								System.out.println("player: " + secondPlayer + " is moving.....");
-								int oldX = player.getXpos();
-								int oldY = player.getYpos();
-								
-								int newX = Integer.parseInt(resultSet[5]);
-								int newY = Integer.parseInt(resultSet[6]);
-								
-								movePlayerOnScreen(oldX, oldY, newX, newY, resultSet[7]);
-							}  
-							if (player.getName().equals(thirdPlayer)) {
-								System.out.println("player: " + thirdPlayer + " is moving.....");
-								int oldX = player.getXpos();
-								int oldY = player.getYpos();
-								
-								int newX = Integer.parseInt(resultSet[9]);
-								int newY = Integer.parseInt(resultSet[10]);
-								
-								movePlayerOnScreen(oldX, oldY, newX, newY, resultSet[11]);
-							}
-							
-						}
-						Thread.sleep(5000);
-					}
-					
-					} catch (NumberFormatException error) {
-						error.printStackTrace();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				connectionSocket.close();
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-	
-	
-	public static boolean isNumeric(String str) { 
-		  try {  
-		    Integer.parseInt(str);  
-		    return true;
-		  } catch(NumberFormatException e){  
-		    return false;  
-		  }  
-		}
 
 }
