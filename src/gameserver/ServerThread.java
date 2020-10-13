@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -22,13 +23,13 @@ public class ServerThread extends Thread {
 	private String sentence;
 	
 	// Common
-	private static Common common;
+	private static HashSet<Player> players;
 
-	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient, Common common) {
+	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient, HashSet<Player> players) {
 		this.connectionSocket = connectionSocket;
 		this.inFromClient = inFromClient;
 		this.outToClient = outToClient;
-		this.common = common;
+		this.players = players;
 	}
 
 	@Override
@@ -45,33 +46,55 @@ public class ServerThread extends Thread {
 			newPlayer.setXpos(p.getX());
 			newPlayer.setYpos(p.getY());
 			newPlayer.setDirection("up");
-			Common.addPlayer(newPlayer);
-
+			players.add(newPlayer);
+			sendPlayer(this.outToClient);
+			int xpos;
+			int ypos;
+			int point;
+			String direction;
+			String name ;
 			
 			while (true) {				
 				String clientPlayer = connectionSocket.getInetAddress().getHostName();
 				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
-
-
+				
+					
+				String s = inFromClient.readLine();
+				
+				String [] split = s.split(",");
+				xpos = Integer.parseInt(split[0]);
+				ypos = Integer.parseInt(split[1]);
+				direction = split[2];
+				name = split[3];
+				
+				Player user = new Player(name, xpos, ypos, direction);
+				players.add(user);
+				
+				String response = name + " " + xpos + " " + ypos + " " + direction;
+				
+				for (ServerThread st: Server.clients) {
+					st.update(s);
+				}
+				/*
 				sendPlayer(outToClient);
 				System.out.println("clients connected = " + Server.clients.size());
 				for (ServerThread st: Server.clients) {
 					if (newPlayer.getName().length() != 0) {
-						st.updatePlayers(inFromClient.readLine());
+						st.update(inFromClient.readLine());
 					}
 					else {
 						System.out.println("player hasen't been created yet");
 					}
 				}
 
-				sendPlayer(outToClient);
-				Thread.sleep(5000);
+				sendPlayer(outToClient); */
+				//Thread.sleep(5000);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+	/*
 	public synchronized void updatePlayers(String newPositions) {
 		try {
 			String[] receivedPosition = newPositions.split(",");
@@ -137,11 +160,19 @@ public class ServerThread extends Thread {
 		} catch (NumberFormatException error) {
 			error.printStackTrace();
 		}
+	} */
+	
+	public void update(String s) {
+		try {
+			this.outToClient.writeBytes(s + "\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void sendPlayer(DataOutputStream outstream) {
 		String s = "";
-		for (Player p : Common.getPlayers()) {
+		for (Player p : players) {
 			s = s + p.toString();
 		}
 		System.out.println(s);

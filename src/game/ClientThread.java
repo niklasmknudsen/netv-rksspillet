@@ -31,6 +31,9 @@ public class ClientThread extends Thread {
 			String firstPlayer = "";
 			String secondPlayer = "";
 			String thirdPlayer = "";
+			int xpos = 0;
+			int ypos = 0;
+			String direction = "";
 			
 			try {
 				String newPlayerName = inFromUser.readLine();
@@ -61,7 +64,47 @@ public class ClientThread extends Thread {
 					
 					
 					while (true) {
-						main.updateScoreTable();
+						String receivedData = inFromServer.readLine();
+						String[] resultSet = receivedData.split(",");
+						System.out.println("receivedData: " + receivedData);
+						xpos = Integer.parseInt(resultSet[0]);
+						ypos = Integer.parseInt(resultSet[1]);
+						//point = Integer.parseInt(resultSet[2]);
+						direction = resultSet[2];
+						firstPlayer = resultSet[3];
+						
+						boolean hasPlayer = false;
+						
+						for (Player player : Main.players) {
+							if (player.name.equals(firstPlayer)) 
+							{
+								
+								System.out.println("updating: " + firstPlayer);
+								
+								int oldx = player.xpos;
+								int oldy = player.ypos;
+								
+								hasPlayer = true;
+								player.xpos = xpos;
+								player.ypos = ypos;
+								player.direction = direction;
+								//player.point = point;
+								
+								main.movePlayerOnScreen(oldx, oldy, xpos, ypos, direction);
+								main.updateScoreTable();
+								
+							}
+						}
+						
+						if (!hasPlayer) {
+							Player p = new Player(firstPlayer,xpos,ypos,direction); 
+							//p.point = point;
+							Main.players.add(new Player(firstPlayer,xpos,ypos,direction));
+							System.out.println("Added player: " + firstPlayer);
+							main.movePlayerOnScreen(xpos, ypos, xpos, ypos, direction);;
+							main.updateScoreTable();
+						}
+						/*main.updateScoreTable();
 						int x = main.me.getXpos();
 						int y = main.me.getYpos();
 						String direc = main.me.getDirection();
@@ -136,7 +179,7 @@ public class ClientThread extends Thread {
 							}
 							main.updateScoreTable();
 						}
-						//Thread.sleep(2000);
+						//Thread.sleep(2000); */
 					}
 					
 					} catch (NumberFormatException error) {
