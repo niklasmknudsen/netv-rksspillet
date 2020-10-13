@@ -52,6 +52,6 @@ public class Player {
 		point+=p;
 	}
 	public String toString() {
-		return name+ "," + this.xpos + "," + this.ypos + "," + this.direction;
+		return name+ "," + this.xpos + "," + this.ypos + "," + this.direction + ",";
 	}
 }

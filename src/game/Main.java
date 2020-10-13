@@ -317,7 +317,7 @@ public class Main extends Application {
 					me.setYpos(playerPositionY);
 					me.setDirection(playerDirection);
 					Common.addPlayer(me);
-					
+					updateScoreTable();
 					
 					while (true) {
 						int x = me.getXpos();
@@ -346,6 +346,7 @@ public class Main extends Application {
 								updateScoreTable();
 							}
 						}
+						Thread.sleep(5000);
 					}
 					
 					} catch (NumberFormatException error) {
