@@ -345,6 +345,7 @@ public class Main extends Application {
 						}
 	
 						for (Player player: Common.getPlayers()) {
+							System.out.println("players online: " + Common.getPlayers().size());
 							if (player.getName().equals(firstPlayer)) {
 								System.out.println("player: " + firstPlayer + " is moving.....");
 								int oldX = player.getXpos();
@@ -354,6 +355,7 @@ public class Main extends Application {
 								int newY = Integer.parseInt(resultSet[2]);
 								
 								movePlayerOnScreen(oldX,oldY, newX, newY, resultSet[3]);
+								updateScoreTable();
 							} 
 							if (player.getName().equals(secondPlayer)) {
 								System.out.println("player: " + firstPlayer + " is moving.....");
@@ -364,6 +366,7 @@ public class Main extends Application {
 								int newY = Integer.parseInt(resultSet[6]);
 								
 								movePlayerOnScreen(oldX,oldY, newX, newY, resultSet[7]);
+								updateScoreTable();
 							}  
 							if (player.getName().equals(thirdPlayer)) {
 								System.out.println("player: " + firstPlayer + " is moving.....");
@@ -374,10 +377,10 @@ public class Main extends Application {
 								int newY = Integer.parseInt(resultSet[10]);
 								
 								movePlayerOnScreen(oldX,oldY, newX, newY, resultSet[11]);
+								updateScoreTable();
 							}
 							
 						}
-						updateScoreTable();
 						Thread.sleep(5000);
 					}
 					
