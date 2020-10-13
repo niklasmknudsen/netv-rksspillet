@@ -48,7 +48,7 @@ public class ServerThread extends Thread {
 			Common.addPlayer(newPlayer);
 
 			
-			while (true) {
+			while (true) {				
 				String clientPlayer = connectionSocket.getInetAddress().getHostName();
 				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
 
@@ -72,24 +72,52 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	public void updatePlayers(String newPositions) {
+	public synchronized void updatePlayers(String newPositions) {
 		try {
 			String[] receivedPosition = newPositions.split(",");
-			String playerToUpdate = receivedPosition[0];
-			int newX = Integer.parseInt(receivedPosition[1]);
-			int newY = Integer.parseInt(receivedPosition[2]);
-			String playerDirection = receivedPosition[3];
+			String firstPlayer = receivedPosition[0];
 			System.out.println("new positions: " + newPositions);
+			String secondPlayer = "";
+			String thirdPlayer = "";
 			
+			if (receivedPosition.length > 4 && receivedPosition[4] != null) {
+				secondPlayer = receivedPosition[4];
+			}
+			if (receivedPosition.length > 7 && receivedPosition[8] != null) {
+				thirdPlayer = receivedPosition[8];
+			}
+
 			for (int i = 0; i < Common.getPlayers().size(); i++) {
-				System.out.println("playerToUpdate: " + playerToUpdate);
-				System.out.println("current: " + Common.getPlayers().get(i).getName().equals(playerToUpdate));
-				if (Common.getPlayers().get(i).getName().equals(playerToUpdate)) {
+				System.out.println("playerToUpdate: " + firstPlayer);
+				System.out.println("current: " + Common.getPlayers().get(i).getName().equals(firstPlayer));
+				if (Common.getPlayers().get(i).getName().equals(firstPlayer)) {
+					int newX = Integer.parseInt(receivedPosition[1]);
+					int newY = Integer.parseInt(receivedPosition[2]);
+					String playerDirection = receivedPosition[3];
 					Player foundPlayer = Common.getPlayers().get(i);
 					foundPlayer.setXpos(newX);
 					foundPlayer.setYpos(newY);
 					foundPlayer.setDirection(playerDirection);
 				}
+				if (Common.getPlayers().get(i).getName().equals(secondPlayer)) {
+					int newX = Integer.parseInt(receivedPosition[5]);
+					int newY = Integer.parseInt(receivedPosition[6]);
+					String playerDirection = receivedPosition[7];
+					Player foundPlayer = Common.getPlayers().get(i);
+					foundPlayer.setXpos(newX);
+					foundPlayer.setYpos(newY);
+					foundPlayer.setDirection(playerDirection);
+				}
+				if (Common.getPlayers().get(i).getName().equals(thirdPlayer)) {
+					int newX = Integer.parseInt(receivedPosition[9]);
+					int newY = Integer.parseInt(receivedPosition[10]);
+					String playerDirection = receivedPosition[11];
+					Player foundPlayer = Common.getPlayers().get(i);
+					foundPlayer.setXpos(newX);
+					foundPlayer.setYpos(newY);
+					foundPlayer.setDirection(playerDirection);
+				}
+				
 			}	
 		} catch (NumberFormatException error) {
 			error.printStackTrace();
