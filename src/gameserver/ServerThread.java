@@ -88,8 +88,6 @@ public class ServerThread extends Thread {
 			}
 
 			for (int i = 0; i < Common.getPlayers().size(); i++) {
-				System.out.println("playerToUpdate: " + firstPlayer);
-				System.out.println("current: " + Common.getPlayers().get(i).getName().equals(firstPlayer));
 				if (Common.getPlayers().get(i).getName().equals(firstPlayer)) {
 					int newX = Integer.parseInt(receivedPosition[1]);
 					int newY = Integer.parseInt(receivedPosition[2]);
