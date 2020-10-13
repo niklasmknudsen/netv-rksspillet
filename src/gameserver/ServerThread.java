@@ -22,9 +22,15 @@ public class ServerThread extends Thread {
 	private ServerSocket welcomeSocket;
 	private String sentence;
 	
-	// Common
+	// HashSet with Players
 	private static HashSet<Player> players;
 
+	// last visited by player with attribute values
+	private int xpos = 0;
+	private int ypos = 0;
+	private String direction = "";
+	private String playerName = "";
+	
 	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient, HashSet<Player> players) {
 		this.connectionSocket = connectionSocket;
 		this.inFromClient = inFromClient;
@@ -39,128 +45,49 @@ public class ServerThread extends Thread {
 			sentence = "Welcome to the server " + newPlayerName;
 			outToClient.writeBytes(sentence + '\n');
 			
-
+			
 			pair p = getRandomFreePosition();
 			Player newPlayer = new Player();
 			newPlayer.setName(newPlayerName);
 			newPlayer.setXpos(p.getX());
 			newPlayer.setYpos(p.getY());
 			newPlayer.setDirection("up");
-			players.add(newPlayer);
+			players.add(newPlayer); 
 			sendPlayer(this.outToClient);
-			int xpos;
-			int ypos;
-			int point;
-			String direction;
-			String name ;
 			
 			while (true) {				
 				String clientPlayer = connectionSocket.getInetAddress().getHostName();
 				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
-				
-					
+			
 				String s = inFromClient.readLine();
-				
-				String [] split = s.split(",");
-				xpos = Integer.parseInt(split[0]);
-				ypos = Integer.parseInt(split[1]);
-				direction = split[2];
-				name = split[3];
-				
-				Player user = new Player(name, xpos, ypos, direction);
-				players.add(user);
-				
-				String response = name + " " + xpos + " " + ypos + " " + direction;
-				
-				for (ServerThread st: Server.clients) {
-					st.update(s);
-				}
-				/*
-				sendPlayer(outToClient);
-				System.out.println("clients connected = " + Server.clients.size());
-				for (ServerThread st: Server.clients) {
-					if (newPlayer.getName().length() != 0) {
-						st.update(inFromClient.readLine());
-					}
-					else {
-						System.out.println("player hasen't been created yet");
-					}
+				System.out.println("from client: " + s);
+				try {
+					
+					String [] playerDetails = s.split(",");
+					playerName = playerDetails[0];
+					xpos = Integer.parseInt(playerDetails[1]);
+					ypos = Integer.parseInt(playerDetails[2]);
+					direction = playerDetails[3];
+					
+					Player user = new Player(playerName, xpos, ypos, direction);
+					players.add(user);
+					String response = playerName + " " + xpos + " " + ypos + " " + direction;
+					
+				} catch (NumberFormatException err) {
+					err.getMessage();
 				}
 
-				sendPlayer(outToClient); */
-				//Thread.sleep(5000);
+
+				for (ServerThread st: Server.playerClients) {
+					st.update(s);
+				}
+
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	/*
-	public synchronized void updatePlayers(String newPositions) {
-		try {
-			String[] receivedPosition = newPositions.split(",");
-			String firstPlayer = receivedPosition[0];
-			System.out.println("new positions: " + newPositions);
-			String secondPlayer = "";
-			String thirdPlayer = "";
-			
-			if (receivedPosition.length > 4 && receivedPosition[4] != null) {
-				secondPlayer = receivedPosition[4];
-				checkifExists(secondPlayer);
-				Player newPlayer = new Player();
-				newPlayer.setName(secondPlayer);
-				newPlayer.setXpos(Integer.parseInt(receivedPosition[5]));
-				newPlayer.setYpos(Integer.parseInt(receivedPosition[6]));
-				newPlayer.setDirection(receivedPosition[7]);
-				Common.addPlayer(newPlayer);
-			}
-			if (receivedPosition.length > 7 && receivedPosition[8] != null) {
-				thirdPlayer = receivedPosition[8];
-				checkifExists(thirdPlayer);
-				Player newPlayer = new Player();
-				newPlayer.setName(secondPlayer);
-				newPlayer.setXpos(Integer.parseInt(receivedPosition[9]));
-				newPlayer.setYpos(Integer.parseInt(receivedPosition[10]));
-				newPlayer.setDirection(receivedPosition[11]);
-				Common.addPlayer(newPlayer); 
-			}
 
-			for (int i = 0; i < Common.getPlayers().size(); i++) {
-				if (Common.getPlayers().get(i).getName().equals(firstPlayer)) {
-					int newX = Integer.parseInt(receivedPosition[1]);
-					int newY = Integer.parseInt(receivedPosition[2]);
-					String playerDirection = receivedPosition[3];
-					Player foundPlayer = Common.getPlayers().get(i);
-					System.out.println("first person: " + foundPlayer);
-					foundPlayer.setXpos(newX);
-					foundPlayer.setYpos(newY);
-					foundPlayer.setDirection(playerDirection);
-				}
-				if (Common.getPlayers().get(i).getName().equals(secondPlayer)) {
-					int newX = Integer.parseInt(receivedPosition[5]);
-					int newY = Integer.parseInt(receivedPosition[6]);
-					String playerDirection = receivedPosition[7];
-					Player foundPlayer = Common.getPlayers().get(i);
-					System.out.println("second person: " + foundPlayer);
-					foundPlayer.setXpos(newX);
-					foundPlayer.setYpos(newY);
-					foundPlayer.setDirection(playerDirection);
-				}
-				if (Common.getPlayers().get(i).getName().equals(thirdPlayer)) {
-					int newX = Integer.parseInt(receivedPosition[9]);
-					int newY = Integer.parseInt(receivedPosition[10]);
-					String playerDirection = receivedPosition[11];
-					Player foundPlayer = Common.getPlayers().get(i);
-					System.out.println("third person: " + foundPlayer);
-					foundPlayer.setXpos(newX);
-					foundPlayer.setYpos(newY);
-					foundPlayer.setDirection(playerDirection);
-				}
-				
-			}	
-		} catch (NumberFormatException error) {
-			error.printStackTrace();
-		}
-	} */
 	
 	public void update(String s) {
 		try {
@@ -170,7 +97,7 @@ public class ServerThread extends Thread {
 		}
 	}
 
-	public static void sendPlayer(DataOutputStream outstream) {
+	public synchronized static void sendPlayer(DataOutputStream outstream) {
 		String s = "";
 		for (Player p : players) {
 			s = s + p.toString();
@@ -183,14 +110,16 @@ public class ServerThread extends Thread {
 			e.printStackTrace();
 		}
 	}
+
+	public StringBuffer GetUpdate() {
+		
+		StringBuffer a = new StringBuffer();
+		a.append(String.valueOf(xpos) + ",");
+		a.append(String.valueOf(ypos) + ",");
+		a.append(direction + ",");
+		a.append(playerName);
 	
-	
-	public void checkifExists(String playerName) {
-		for (Player pl : Common.getPlayers()) {
-			if (pl.getName().equals(playerName)) {
-				Common.removePlayer(pl);
-			}
-		}
+		return a;
 	}
 
 	public pair getRandomFreePosition()
