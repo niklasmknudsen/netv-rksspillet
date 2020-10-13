@@ -82,9 +82,21 @@ public class ServerThread extends Thread {
 			
 			if (receivedPosition.length > 4 && receivedPosition[4] != null) {
 				secondPlayer = receivedPosition[4];
+				/*Player newPlayer = new Player();
+				newPlayer.setName(secondPlayer);
+				newPlayer.setXpos(Integer.parseInt(receivedPosition[5]));
+				newPlayer.setYpos(Integer.parseInt(receivedPosition[6]));
+				newPlayer.setDirection(receivedPosition[7]);
+				Common.addPlayer(newPlayer); */
 			}
 			if (receivedPosition.length > 7 && receivedPosition[8] != null) {
 				thirdPlayer = receivedPosition[8];
+				/*Player newPlayer = new Player();
+				newPlayer.setName(secondPlayer);
+				newPlayer.setXpos(Integer.parseInt(receivedPosition[9]));
+				newPlayer.setYpos(Integer.parseInt(receivedPosition[10]));
+				newPlayer.setDirection(receivedPosition[11]);
+				Common.addPlayer(newPlayer); */
 			}
 
 			for (int i = 0; i < Common.getPlayers().size(); i++) {
@@ -93,6 +105,7 @@ public class ServerThread extends Thread {
 					int newY = Integer.parseInt(receivedPosition[2]);
 					String playerDirection = receivedPosition[3];
 					Player foundPlayer = Common.getPlayers().get(i);
+					System.out.println("first person: " + foundPlayer);
 					foundPlayer.setXpos(newX);
 					foundPlayer.setYpos(newY);
 					foundPlayer.setDirection(playerDirection);
@@ -102,6 +115,7 @@ public class ServerThread extends Thread {
 					int newY = Integer.parseInt(receivedPosition[6]);
 					String playerDirection = receivedPosition[7];
 					Player foundPlayer = Common.getPlayers().get(i);
+					System.out.println("second person: " + foundPlayer);
 					foundPlayer.setXpos(newX);
 					foundPlayer.setYpos(newY);
 					foundPlayer.setDirection(playerDirection);
@@ -111,6 +125,7 @@ public class ServerThread extends Thread {
 					int newY = Integer.parseInt(receivedPosition[10]);
 					String playerDirection = receivedPosition[11];
 					Player foundPlayer = Common.getPlayers().get(i);
+					System.out.println("third person: " + foundPlayer);
 					foundPlayer.setXpos(newX);
 					foundPlayer.setYpos(newY);
 					foundPlayer.setDirection(playerDirection);

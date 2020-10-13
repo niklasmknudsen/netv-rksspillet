@@ -337,11 +337,25 @@ public class Main extends Application {
 						String[] resultSet = receivedData.split(",");
 						System.out.println("receivedData: " + receivedData);
 						firstPlayer = resultSet[0];
+						
 						if (resultSet.length > 4 && resultSet[4] != null) {
 							secondPlayer = resultSet[4];
+							Player newPlayer = new Player();
+							newPlayer.setName(secondPlayer);
+							newPlayer.setXpos(Integer.parseInt(resultSet[5]));
+							newPlayer.setYpos(Integer.parseInt(resultSet[6]));
+							newPlayer.setDirection(resultSet[7]);
+							Common.addPlayer(newPlayer);
+							
 						}
 						if (resultSet.length > 8 && resultSet[8] != null) {
 							thirdPlayer = resultSet[8];
+							Player newPlayer = new Player();
+							newPlayer.setName(thirdPlayer);
+							newPlayer.setXpos(Integer.parseInt(resultSet[9]));
+							newPlayer.setYpos(Integer.parseInt(resultSet[10]));
+							newPlayer.setDirection(resultSet[11]);
+							Common.addPlayer(newPlayer);
 						}
 	
 						for (Player player: Common.getPlayers()) {
@@ -354,30 +368,27 @@ public class Main extends Application {
 								int newX = Integer.parseInt(resultSet[1]);
 								int newY = Integer.parseInt(resultSet[2]);
 								
-								movePlayerOnScreen(oldX,oldY, newX, newY, resultSet[3]);
-								updateScoreTable();
+								movePlayerOnScreen(oldX, oldY, newX, newY, resultSet[3]);
 							} 
 							if (player.getName().equals(secondPlayer)) {
-								System.out.println("player: " + firstPlayer + " is moving.....");
+								System.out.println("player: " + secondPlayer + " is moving.....");
 								int oldX = player.getXpos();
 								int oldY = player.getYpos();
 								
 								int newX = Integer.parseInt(resultSet[5]);
 								int newY = Integer.parseInt(resultSet[6]);
 								
-								movePlayerOnScreen(oldX,oldY, newX, newY, resultSet[7]);
-								updateScoreTable();
+								movePlayerOnScreen(oldX, oldY, newX, newY, resultSet[7]);
 							}  
 							if (player.getName().equals(thirdPlayer)) {
-								System.out.println("player: " + firstPlayer + " is moving.....");
+								System.out.println("player: " + thirdPlayer + " is moving.....");
 								int oldX = player.getXpos();
 								int oldY = player.getYpos();
 								
 								int newX = Integer.parseInt(resultSet[9]);
 								int newY = Integer.parseInt(resultSet[10]);
 								
-								movePlayerOnScreen(oldX,oldY, newX, newY, resultSet[11]);
-								updateScoreTable();
+								movePlayerOnScreen(oldX, oldY, newX, newY, resultSet[11]);
 							}
 							
 						}
