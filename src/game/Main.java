@@ -297,7 +297,7 @@ public class Main extends Application {
 				// Setting up standard players
 				outToServer.writeBytes(newPlayerName + "\n");
 				System.out.println(inFromServer.readLine() + " U can move the character by pressing on the arrow keys");
-			
+				
 				
 				// common get players
 				String response = inFromServer.readLine();
