@@ -72,7 +72,7 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	public synchronized void updatePlayers(String newPositions) {
+	public void updatePlayers(String newPositions) {
 		try {
 			String[] receivedPosition = newPositions.split(",");
 			String firstPlayer = receivedPosition[0];
