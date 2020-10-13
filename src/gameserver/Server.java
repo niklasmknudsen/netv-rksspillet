@@ -12,7 +12,7 @@ import game.Player;
 public class Server {
 	
 	private static HashSet<Player> players = new HashSet<Player>();
-	static HashSet<ServerThread> clients = new HashSet<>();
+	static HashSet<ServerThread> playerClients = new HashSet<>();
 	/**
 	 * @param args
 	 */
@@ -22,9 +22,9 @@ public class Server {
 			Socket connectionSocket = welcomeSocket.accept();
 			BufferedReader inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
 			DataOutputStream outToClient = new DataOutputStream(connectionSocket.getOutputStream());
-			ServerThread t1 = new ServerThread(connectionSocket, inFromClient, outToClient, players);
-			clients.add(t1);
-			t1.start();
+			ServerThread playerClient = new ServerThread(connectionSocket, inFromClient, outToClient, players);
+			playerClients.add(playerClient);
+			playerClient.start();
 			
 		}
 	}
