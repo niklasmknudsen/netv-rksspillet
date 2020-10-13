@@ -23,7 +23,7 @@ public class Server {
 			ServerThread t1 = new ServerThread(connectionSocket, inFromClient, outToClient, common);
 			clients.add(t1);
 			t1.start();
-
+			
 		}
 	}
 
