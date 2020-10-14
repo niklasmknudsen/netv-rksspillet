@@ -146,10 +146,10 @@ public class Main extends Application {
 			me = new Player(user, p.getX(), p.getY(), "up");
 			players.add(me);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
-			
+			connectToServer();
 		
 			scoreList.setText(getScoreList());
-			connectToServer();
+			System.out.println("bliver kaldt");
 			this.outToServer.writeBytes(me.toString() + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -234,11 +234,23 @@ public class Main extends Application {
 				p.xpos = pa.getX();
 				p.ypos = pa.getY();
 				movePlayerOnScreen(x + delta_x, y + delta_y, pa.getX(), pa.getY(), p.direction);
+				try {
+					//System.out.println(p.toString());
+					this.outToServer.writeBytes(p.toString() + "\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			} else
 				me.addPoints(1);
 			movePlayerOnScreen(x, y, x + delta_x, y + delta_y, direction);
 			me.setXpos(x + delta_x);
 			me.setYpos(y + delta_y);
+			try {
+				//System.out.println(me.toString());
+				this.outToServer.writeBytes(me.toString() + "\n");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}
@@ -275,7 +287,7 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		try {
-			connectionSocket = new Socket("10.24.73.142",6900);
+			connectionSocket = new Socket("192.168.87.164",6900);
 			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
 			
