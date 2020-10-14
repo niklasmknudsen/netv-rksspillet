@@ -42,47 +42,55 @@ public class ServerThread extends Thread {
 	@Override
 	public void run() { // connection.getInetAddress().getHostName())
 		try {
-			newPlayerJoined = inFromClient.readLine(); // from client
-			Player newPlayer = null;
-			String[] newPlayerDetails = newPlayerJoined.split(",");
-			sentence = "Welcome to the server " + newPlayerDetails[0];
-			outToClient.writeBytes(sentence + '\n');
+			String resp = inFromClient.readLine();
+			String[] response = resp.split(",");
+			playerName = response[0];
 			try {
-				newPlayer = new Player(newPlayerDetails[0], Integer.parseInt(newPlayerDetails[1]), Integer.parseInt(newPlayerDetails[2]), newPlayerDetails[3]);
-			} catch (NumberFormatException e) {
-				e.getMessage();
+				xpos = Integer.parseInt(response[1]);
+				ypos = Integer.parseInt(response[2]);
+			} catch(NumberFormatException error) {
+				error.getMessage();
+			}		
+			
+			direction = response[3];
+			
+			
+			String welcomePlayer = inFromClient.readLine();
+			String[] playerInfo = welcomePlayer.split(",");
+			sentence = "Welcome to the server " + playerInfo[0];
+			System.out.println("sentence: " + sentence);
+			outToClient.writeBytes(sentence + '\n');
+			
+			
+			
+			for (ServerThread pc : Server.playerClients) {
+				String currentStats = pc.GetUpdate().toString();
+				System.out.println(currentStats + " the currentStats");
+				if (!pc.equals(this)) {
+					this.outToClient.writeBytes(currentStats + "\n");
+				}
 			}
 			
-			if (!players.contains(newPlayer)) {
-				players.add(newPlayer);
-				System.out.println("added new player: " + newPlayerDetails[0]);
-				this.sendPlayer(outToClient);
-			}
 			
-			while (true) {				
-				String clientPlayer = connectionSocket.getInetAddress().getHostName();
-				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
-			
-				String s = inFromClient.readLine();
+			while (true) {
+				String receivedData = inFromClient.readLine();
+				
+				String[] playerDescription = receivedData.split(",");
+				playerName = playerDescription[0];
 				try {
-					String [] playerDetails = s.split(",");
-					playerName = playerDetails[0];
-					xpos = Integer.parseInt(playerDetails[1]);
-					ypos = Integer.parseInt(playerDetails[2]);
-					direction = playerDetails[3];
-					
-					
-					String response = playerName + " " + xpos + " " + ypos + " " + direction;
-					System.out.println(response);
-				} catch (NumberFormatException err) {
-					err.getMessage();
+					xpos = Integer.parseInt(response[1]);
+					ypos = Integer.parseInt(response[2]);
+				} catch(NumberFormatException error) {
+					error.getMessage();
+				}	
+				direction = playerDescription[3];
+				System.out.println(receivedData);
+				for (ServerThread pc : Server.playerClients) {
+					if (!pc.equals(this)) {
+						pc.update(receivedData);
+					}
 				}
-
-
-				for (ServerThread st: Server.playerClients) {
-					st.sendPlayer(outToClient);
-				}
-				this.connectionSocket.close();
+				
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -116,10 +124,10 @@ public class ServerThread extends Thread {
 	public StringBuffer GetUpdate() {
 		
 		StringBuffer a = new StringBuffer();
+		a.append(playerName + ",");
 		a.append(String.valueOf(xpos) + ",");
 		a.append(String.valueOf(ypos) + ",");
-		a.append(direction + ",");
-		a.append(playerName);
+		a.append(direction);
 	
 		return a;
 	}
