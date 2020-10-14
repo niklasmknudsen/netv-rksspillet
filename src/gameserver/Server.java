@@ -25,7 +25,6 @@ public class Server {
 			ServerThread playerClient = new ServerThread(connectionSocket, inFromClient, outToClient, players);
 			playerClients.add(playerClient);
 			playerClient.start();
-			
 		}
 	}
 

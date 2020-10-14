@@ -45,22 +45,24 @@ public class ServerThread extends Thread {
 			sentence = "Welcome to the server " + newPlayerName;
 			outToClient.writeBytes(sentence + '\n');
 			
+			if (!players.contains(newPlayerName)) {
+				pair p = getRandomFreePosition();
+				Player newPlayer = new Player();
+				newPlayer.setName(newPlayerName);
+				newPlayer.setXpos(p.getX());
+				newPlayer.setYpos(p.getY());
+				newPlayer.setDirection("up");
+				players.add(newPlayer);
+				System.out.println("didnt contain player");
+				this.sendPlayer(outToClient);
 			
-			pair p = getRandomFreePosition();
-			Player newPlayer = new Player();
-			newPlayer.setName(newPlayerName);
-			newPlayer.setXpos(p.getX());
-			newPlayer.setYpos(p.getY());
-			newPlayer.setDirection("up");
-			players.add(newPlayer); 
-			sendPlayer(this.outToClient);
-			
+			}
+						
 			while (true) {				
 				String clientPlayer = connectionSocket.getInetAddress().getHostName();
 				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
 			
 				String s = inFromClient.readLine();
-				System.out.println("from client: " + s);
 				try {
 					
 					String [] playerDetails = s.split(",");
@@ -69,19 +71,25 @@ public class ServerThread extends Thread {
 					ypos = Integer.parseInt(playerDetails[2]);
 					direction = playerDetails[3];
 					
-					Player user = new Player(playerName, xpos, ypos, direction);
-					players.add(user);
-					String response = playerName + " " + xpos + " " + ypos + " " + direction;
+					for (Player player : players) {
+						if (player.getName().equals(playerName)) {
+							player.setXpos(xpos);
+							player.setYpos(ypos);
+							player.setDirection(direction);
+						}
+					}
 					
+					String response = playerName + " " + xpos + " " + ypos + " " + direction;
+					System.out.println(response);
 				} catch (NumberFormatException err) {
 					err.getMessage();
 				}
 
 
 				for (ServerThread st: Server.playerClients) {
-					st.update(s);
+					st.sendPlayer(outToClient);
 				}
-
+				this.connectionSocket.close();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -89,7 +97,7 @@ public class ServerThread extends Thread {
 	}
 
 	
-	public void update(String s) {
+	public synchronized void update(String s) {
 		try {
 			this.outToClient.writeBytes(s + "\n");
 		} catch (IOException e) {
@@ -97,7 +105,7 @@ public class ServerThread extends Thread {
 		}
 	}
 
-	public synchronized static void sendPlayer(DataOutputStream outstream) {
+	public synchronized void sendPlayer(DataOutputStream outstream) {
 		String s = "";
 		for (Player p : players) {
 			s = s + p.toString();

@@ -134,7 +134,7 @@ public class Main extends Application {
 			players.add(harry);
 			fields[pa.getX()][pa.getY()].setGraphic(new ImageView(hero_up));
 		
-			
+			// Input field: username made by Christian Eld.
 			String playerName = JOptionPane.showInputDialog("enter a player name: ");
 			InputStream convert = new ByteArrayInputStream(playerName.getBytes());
 			BufferedReader username = new BufferedReader(new InputStreamReader(convert));
@@ -143,7 +143,8 @@ public class Main extends Application {
 			for (String line; (line = username.readLine()) != null; user += line);
 			
 			pair p = getRandomFreePosition();
-			me = new Player(user, p.getX(), p.getY(), "up");
+			me = new Player();
+			me.setName(user);
 			players.add(me);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 			
@@ -275,7 +276,7 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		try {
-			connectionSocket = new Socket("192.168.87.164",6900);
+			connectionSocket = new Socket("10.24.73.142",6900);
 			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
 			
