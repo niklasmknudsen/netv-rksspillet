@@ -1,12 +1,17 @@
 package game;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
+
+import javax.swing.JOptionPane;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -266,7 +271,7 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		try {
-			connectionSocket = new Socket("10.24.74.147",6900);
+			connectionSocket = new Socket("192.168.0.101",6900);
 			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
 			
@@ -275,6 +280,10 @@ public class Main extends Application {
 		}
 		launch(args);
 	}
+	
+	//Pop up til at skrive navn:
+//	String gamerTag = JOptionPane.showInputDialog("What is your name?");
+
 
 	class ClientThread extends Thread {
 		private Socket connectionSocket;
@@ -291,7 +300,16 @@ public class Main extends Application {
 		@Override
 		public void run() {
 			String sentence;
-			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
+			
+			//Pop-up window, to enter ones username.
+			String gamerTag = JOptionPane.showInputDialog("What is your name?");
+			
+			//Convert the String from Pop-up window to an InputStream
+			InputStream convert = new ByteArrayInputStream(gamerTag.getBytes());
+			
+			//Apply the data from the pop-up window to the game
+			BufferedReader inFromUser = new BufferedReader(new InputStreamReader(convert));
+
 			
 			// Players
 			String firstPlayer = "";
