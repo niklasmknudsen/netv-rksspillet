@@ -36,31 +36,19 @@ public class ClientThread extends Thread {
 			try {
 				System.out.println(inFromServer.readLine() + " U can move the character by pressing on the arrow keys");
 				// common get players
-				/*String response = inFromServer.readLine();
+				String response = inFromServer.readLine();
 				System.out.println(response);
-				String[] serverGeneratedPosition = response.split(","); */
+				String[] serverGeneratedPosition = response.split(","); 
 				
 				try {
-					/* System.out.println("server generated position: " + response);
-					String playerName = serverGeneratedPosition[0];
-					int playerPositionX = Integer.parseInt(serverGeneratedPosition[1]);
-					int playerPositionY = Integer.parseInt(serverGeneratedPosition[2]);
-					String playerDirection = serverGeneratedPosition[3];
-					
-					main.me = new Player();
-					main.me.setName(playerName);
-					main.me.setXpos(playerPositionX);
-					main.me.setYpos(playerPositionY);
-					main.me.setDirection(playerDirection);
-					main.players.add(main.me); */
-					
+				    System.out.println("server generated position: " + response);
+					String plName = serverGeneratedPosition[0];
+					int PositionX = Integer.parseInt(serverGeneratedPosition[1]);
+					int PositionY = Integer.parseInt(serverGeneratedPosition[2]);
+					String plDirection = serverGeneratedPosition[3];
 					
 					while (true) {
-						int x = main.me.getXpos();
-						int y = main.me.getYpos();
-						String direc = main.me.getDirection();
-						outToServer.writeBytes(main.me.getName() + "," + x + "," + y + "," + direc + "," + "\n");
-						
+
 						String receivedData = inFromServer.readLine();
 						String[] resultSet = receivedData.split(",");
 						System.out.println("receivedData: " + receivedData);
@@ -71,17 +59,9 @@ public class ClientThread extends Thread {
 						
 						
 						boolean hasPlayer = false;
-						if (main.me.getName().equals(playerName)) {
-							main.me.setName(playerName);
-							main.me.setXpos(playerPositionX);
-							main.me.setYpos(playerPositionY);
-							main.me.setDirection(playerDirection);
-						}
-						
 						
 						for (Player player : Main.players) {
-							
-							if (player.getName().equals(playerName)) {
+							 if (player.getName().equals(playerName)) {
 								System.out.println("player " + playerName + " is moving..");
 								
 								int oldx = player.getXpos();
@@ -98,10 +78,12 @@ public class ClientThread extends Thread {
 						}
 						
 						if (!hasPlayer) {
-							Player newPlayer = new Player(playerName,playerPositionX,playerPositionY,playerDirection); 
-							main.players.add(newPlayer);
+							main.me.setName(playerName);
+							main.me.setXpos(playerPositionX);
+							main.me.setYpos(playerPositionY);
+							main.me.setDirection(playerDirection);
 							System.out.println("Added player: " + playerName);
-							main.movePlayerOnScreen(playerPositionX, playerPositionY, playerPositionX, playerPositionY, playerDirection);
+							main.movePlayerOnScreen(0, 0, playerPositionX, playerPositionY, playerDirection);
 							main.updateScoreTable();
 						}
 						
@@ -112,7 +94,7 @@ public class ClientThread extends Thread {
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				connectionSocket.close();
+				//connectionSocket.close();
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {

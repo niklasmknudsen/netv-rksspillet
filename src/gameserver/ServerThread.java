@@ -29,6 +29,7 @@ public class ServerThread extends Thread {
 	private int xpos = 0;
 	private int ypos = 0;
 	private String direction = "";
+	private String newPlayerJoined = "";
 	private String playerName = "";
 	
 	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient, HashSet<Player> players) {
@@ -41,43 +42,35 @@ public class ServerThread extends Thread {
 	@Override
 	public void run() { // connection.getInetAddress().getHostName())
 		try {
-			newPlayerName = inFromClient.readLine(); // from client
-			sentence = "Welcome to the server " + newPlayerName;
+			newPlayerJoined = inFromClient.readLine(); // from client
+			Player newPlayer = null;
+			String[] newPlayerDetails = newPlayerJoined.split(",");
+			sentence = "Welcome to the server " + newPlayerDetails[0];
 			outToClient.writeBytes(sentence + '\n');
-			
-			if (!players.contains(newPlayerName)) {
-				pair p = getRandomFreePosition();
-				Player newPlayer = new Player();
-				newPlayer.setName(newPlayerName);
-				newPlayer.setXpos(p.getX());
-				newPlayer.setYpos(p.getY());
-				newPlayer.setDirection("up");
-				players.add(newPlayer);
-				System.out.println("didnt contain player");
-				this.sendPlayer(outToClient);
-			
+			try {
+				newPlayer = new Player(newPlayerDetails[0], Integer.parseInt(newPlayerDetails[1]), Integer.parseInt(newPlayerDetails[2]), newPlayerDetails[3]);
+			} catch (NumberFormatException e) {
+				e.getMessage();
 			}
-						
+			
+			if (!players.contains(newPlayer)) {
+				players.add(newPlayer);
+				System.out.println("added new player: " + newPlayerDetails[0]);
+				this.sendPlayer(outToClient);
+			}
+			
 			while (true) {				
 				String clientPlayer = connectionSocket.getInetAddress().getHostName();
 				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
 			
 				String s = inFromClient.readLine();
 				try {
-					
 					String [] playerDetails = s.split(",");
 					playerName = playerDetails[0];
 					xpos = Integer.parseInt(playerDetails[1]);
 					ypos = Integer.parseInt(playerDetails[2]);
 					direction = playerDetails[3];
 					
-					for (Player player : players) {
-						if (player.getName().equals(playerName)) {
-							player.setXpos(xpos);
-							player.setYpos(ypos);
-							player.setDirection(direction);
-						}
-					}
 					
 					String response = playerName + " " + xpos + " " + ypos + " " + direction;
 					System.out.println(response);
@@ -112,6 +105,7 @@ public class ServerThread extends Thread {
 		}
 		System.out.println(s);
 		try {
+			
 			outstream.writeBytes(s + "\n");
 
 		} catch (IOException e) {
