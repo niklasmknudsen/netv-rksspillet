@@ -143,15 +143,14 @@ public class Main extends Application {
 			for (String line; (line = username.readLine()) != null; user += line);
 			
 			pair p = getRandomFreePosition();
-			me = new Player();
-			me.setName(user);
+			me = new Player(user, p.getX(), p.getY(), "up");
 			players.add(me);
 			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 			
 		
 			scoreList.setText(getScoreList());
 			connectToServer();
-			this.outToServer.writeBytes(me.getName() + "\n");
+			this.outToServer.writeBytes(me.toString() + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
