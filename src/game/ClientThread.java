@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class ClientThread extends Thread {
@@ -42,51 +43,39 @@ public class ClientThread extends Thread {
 				
 				try {
 				    System.out.println("server generated position: " + response);
-					String plName = serverGeneratedPosition[0];
-					int PositionX = Integer.parseInt(serverGeneratedPosition[1]);
-					int PositionY = Integer.parseInt(serverGeneratedPosition[2]);
-					String plDirection = serverGeneratedPosition[3];
+					playerName = serverGeneratedPosition[0];
+					playerPositionX = Integer.parseInt(serverGeneratedPosition[1]);
+					playerPositionY = Integer.parseInt(serverGeneratedPosition[2]);
+					playerDirection = serverGeneratedPosition[3];
 					
+					boolean gameActivated = false;
+					 
 					while (true) {
-
-						String receivedData = inFromServer.readLine();
-						String[] resultSet = receivedData.split(",");
-						System.out.println("receivedData: " + receivedData);
-						playerName = resultSet[0];
-						playerPositionX = Integer.parseInt(resultSet[1]);
-						playerPositionY = Integer.parseInt(resultSet[2]);
-						playerDirection = resultSet[3];
 						
-						
-						boolean hasPlayer = false;
-						
-						for (Player player : Main.players) {
-							 if (player.getName().equals(playerName)) {
-								System.out.println("player " + playerName + " is moving..");
+						for (Player player: main.players) {
+							if (player.getName().equals(playerName)) {
 								
-								int oldx = player.getXpos();
-								int oldy = player.getYpos();
-								
-								hasPlayer = true;
+								int oldX = player.getXpos();
+								int oldY = player.getYpos();
 								player.setXpos(playerPositionX);
 								player.setYpos(playerPositionY);
 								player.setDirection(playerDirection);
-								main.movePlayerOnScreen(oldx, oldy, playerPositionX, playerPositionY, playerDirection);
+								main.movePlayerOnScreen(oldX, oldY, playerPositionX, playerPositionY, playerDirection);
 								main.updateScoreTable();
-								
+								gameActivated = true;
 							}
 						}
 						
-						if (!hasPlayer) {
-							main.me.setName(playerName);
-							main.me.setXpos(playerPositionX);
-							main.me.setYpos(playerPositionY);
-							main.me.setDirection(playerDirection);
-							System.out.println("Added player: " + playerName);
-							main.movePlayerOnScreen(0, 0, playerPositionX, playerPositionY, playerDirection);
-							main.updateScoreTable();
-						}
 						
+						if (!gameActivated) {
+							Player newPlayer = new Player(playerName, playerPositionX, playerPositionY, playerDirection);
+							System.out.println("new player has spawned " + playerName);
+							main.players.add(newPlayer);
+							main.movePlayerOnScreen(playerPositionX, playerPositionY, playerPositionX, playerPositionY, playerDirection);
+							main.updateScoreTable();
+						} 
+						
+					
 					}
 					
 					} catch (NumberFormatException error) {
@@ -94,7 +83,7 @@ public class ClientThread extends Thread {
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
-				//connectionSocket.close();
+				//this.connectionSocket.close();
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
