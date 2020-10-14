@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -21,14 +22,20 @@ public class ServerThread extends Thread {
 	private ServerSocket welcomeSocket;
 	private String sentence;
 	
-	// Common
-	private static Common common;
+	// HashSet with Players
+	private static HashSet<Player> players;
 
-	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient, Common common) {
+	// last visited by player with attribute values
+	private int xpos = 0;
+	private int ypos = 0;
+	private String direction = "";
+	private String playerName = "";
+	
+	public ServerThread(Socket connectionSocket, BufferedReader inFromClient, DataOutputStream outToClient, HashSet<Player> players) {
 		this.connectionSocket = connectionSocket;
 		this.inFromClient = inFromClient;
 		this.outToClient = outToClient;
-		this.common = common;
+		this.players = players;
 	}
 
 	@Override
@@ -38,108 +45,69 @@ public class ServerThread extends Thread {
 			sentence = "Welcome to the server " + newPlayerName;
 			outToClient.writeBytes(sentence + '\n');
 			
-
-			pair p = getRandomFreePosition();
-			Player newPlayer = new Player();
-			newPlayer.setName(newPlayerName);
-			newPlayer.setXpos(p.getX());
-			newPlayer.setYpos(p.getY());
-			newPlayer.setDirection("up");
-			Common.addPlayer(newPlayer);
-
+			if (!players.contains(newPlayerName)) {
+				pair p = getRandomFreePosition();
+				Player newPlayer = new Player();
+				newPlayer.setName(newPlayerName);
+				newPlayer.setXpos(p.getX());
+				newPlayer.setYpos(p.getY());
+				newPlayer.setDirection("up");
+				players.add(newPlayer);
+				System.out.println("didnt contain player");
+				this.sendPlayer(outToClient);
 			
+			}
+						
 			while (true) {				
 				String clientPlayer = connectionSocket.getInetAddress().getHostName();
 				String clientPlayerID = connectionSocket.getInetAddress().getHostAddress();
-
-
-				sendPlayer(outToClient);
-				System.out.println("clients connected = " + Server.clients.size());
-				for (ServerThread st: Server.clients) {
-					if (newPlayer.getName().length() != 0) {
-						st.updatePlayers(inFromClient.readLine());
+			
+				String s = inFromClient.readLine();
+				try {
+					
+					String [] playerDetails = s.split(",");
+					playerName = playerDetails[0];
+					xpos = Integer.parseInt(playerDetails[1]);
+					ypos = Integer.parseInt(playerDetails[2]);
+					direction = playerDetails[3];
+					
+					for (Player player : players) {
+						if (player.getName().equals(playerName)) {
+							player.setXpos(xpos);
+							player.setYpos(ypos);
+							player.setDirection(direction);
+						}
 					}
-					else {
-						System.out.println("player hasen't been created yet");
-					}
+					
+					String response = playerName + " " + xpos + " " + ypos + " " + direction;
+					System.out.println(response);
+				} catch (NumberFormatException err) {
+					err.getMessage();
 				}
 
-				sendPlayer(outToClient);
-				Thread.sleep(5000);
+
+				for (ServerThread st: Server.playerClients) {
+					st.sendPlayer(outToClient);
+				}
+				this.connectionSocket.close();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public void updatePlayers(String newPositions) {
-		try {
-			String[] receivedPosition = newPositions.split(",");
-			String firstPlayer = receivedPosition[0];
-			System.out.println("new positions: " + newPositions);
-			String secondPlayer = "";
-			String thirdPlayer = "";
-			
-			if (receivedPosition.length > 4 && receivedPosition[4] != null) {
-				secondPlayer = receivedPosition[4];
-				/*Player newPlayer = new Player();
-				newPlayer.setName(secondPlayer);
-				newPlayer.setXpos(Integer.parseInt(receivedPosition[5]));
-				newPlayer.setYpos(Integer.parseInt(receivedPosition[6]));
-				newPlayer.setDirection(receivedPosition[7]);
-				Common.addPlayer(newPlayer); */
-			}
-			if (receivedPosition.length > 7 && receivedPosition[8] != null) {
-				thirdPlayer = receivedPosition[8];
-				/*Player newPlayer = new Player();
-				newPlayer.setName(secondPlayer);
-				newPlayer.setXpos(Integer.parseInt(receivedPosition[9]));
-				newPlayer.setYpos(Integer.parseInt(receivedPosition[10]));
-				newPlayer.setDirection(receivedPosition[11]);
-				Common.addPlayer(newPlayer); */
-			}
 
-			for (int i = 0; i < Common.getPlayers().size(); i++) {
-				if (Common.getPlayers().get(i).getName().equals(firstPlayer)) {
-					int newX = Integer.parseInt(receivedPosition[1]);
-					int newY = Integer.parseInt(receivedPosition[2]);
-					String playerDirection = receivedPosition[3];
-					Player foundPlayer = Common.getPlayers().get(i);
-					System.out.println("first person: " + foundPlayer);
-					foundPlayer.setXpos(newX);
-					foundPlayer.setYpos(newY);
-					foundPlayer.setDirection(playerDirection);
-				}
-				if (Common.getPlayers().get(i).getName().equals(secondPlayer)) {
-					int newX = Integer.parseInt(receivedPosition[5]);
-					int newY = Integer.parseInt(receivedPosition[6]);
-					String playerDirection = receivedPosition[7];
-					Player foundPlayer = Common.getPlayers().get(i);
-					System.out.println("second person: " + foundPlayer);
-					foundPlayer.setXpos(newX);
-					foundPlayer.setYpos(newY);
-					foundPlayer.setDirection(playerDirection);
-				}
-				if (Common.getPlayers().get(i).getName().equals(thirdPlayer)) {
-					int newX = Integer.parseInt(receivedPosition[9]);
-					int newY = Integer.parseInt(receivedPosition[10]);
-					String playerDirection = receivedPosition[11];
-					Player foundPlayer = Common.getPlayers().get(i);
-					System.out.println("third person: " + foundPlayer);
-					foundPlayer.setXpos(newX);
-					foundPlayer.setYpos(newY);
-					foundPlayer.setDirection(playerDirection);
-				}
-				
-			}	
-		} catch (NumberFormatException error) {
-			error.printStackTrace();
+	
+	public synchronized void update(String s) {
+		try {
+			this.outToClient.writeBytes(s + "\n");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
-	public static void sendPlayer(DataOutputStream outstream) {
+	public synchronized void sendPlayer(DataOutputStream outstream) {
 		String s = "";
-		for (Player p : Common.getPlayers()) {
+		for (Player p : players) {
 			s = s + p.toString();
 		}
 		System.out.println(s);
@@ -149,6 +117,17 @@ public class ServerThread extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public StringBuffer GetUpdate() {
+		
+		StringBuffer a = new StringBuffer();
+		a.append(String.valueOf(xpos) + ",");
+		a.append(String.valueOf(ypos) + ",");
+		a.append(direction + ",");
+		a.append(playerName);
+	
+		return a;
 	}
 
 	public pair getRandomFreePosition()

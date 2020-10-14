@@ -24,7 +24,7 @@ public class Common {
 	
 	public static void removePlayer(Player player) {
 		if (players.contains(player)) {
-			players.add(player);
+			players.remove(player);
 		}
 	}
 	
