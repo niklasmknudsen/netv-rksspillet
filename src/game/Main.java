@@ -1,12 +1,17 @@
 package game;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
+
+import javax.swing.JOptionPane;
+
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -123,29 +128,34 @@ public class Main extends Application {
 					break;
 				}
 			});
-			pair p = getRandomFreePosition();
-		//	me = new Player();
-		//	Common.addPlayer(me);
-			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
 			
 			pair pa = getRandomFreePosition();
 			Player harry = new Player("Harry",pa.getX(),pa.getY(),"up");
 			players.add(harry);
 			fields[pa.getX()][pa.getY()].setGraphic(new ImageView(hero_up));
 		
-
+			// Input field: username made by Christian Eld.
+			String playerName = JOptionPane.showInputDialog("enter a player name: ");
+			InputStream convert = new ByteArrayInputStream(playerName.getBytes());
+			BufferedReader username = new BufferedReader(new InputStreamReader(convert));
+			
+			String user = new String();
+			for (String line; (line = username.readLine()) != null; user += line);
+			
+			pair p = getRandomFreePosition();
+			me = new Player();
+			me.setName(user);
+			players.add(me);
+			fields[p.getX()][p.getY()].setGraphic(new ImageView(hero_up));
+			
+		
 			scoreList.setText(getScoreList());
 			connectToServer();
+			this.outToServer.writeBytes(me.getName() + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
-	public void openLoginScreen() {
-		signInDialog = new SignInDialog();
-		signInDialog.showAndWait();
-	} 
-	
 
 	public void connectToServer() {
 		BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -266,7 +276,7 @@ public class Main extends Application {
 
 	public static void main(String[] args) {
 		try {
-			connectionSocket = new Socket("192.168.87.164",6900);
+			connectionSocket = new Socket("10.24.73.142",6900);
 			outToServer = new DataOutputStream(connectionSocket.getOutputStream());
 			inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));	
 			
